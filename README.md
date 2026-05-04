@@ -14,6 +14,8 @@ npx ahk init
 
 ## Why this exists
 
+If you don't know what is Agent Harness, you can check this blog post: [Introducing Agent Harness](https://aakashgupta.medium.com/2025-was-agents-2026-is-agent-harnesses-heres-why-that-changes-everything-073e9877655e).
+
 Most AI coding tools give you a single agent with a chat window. That works for small tasks. It breaks down when:
 
 - You want multiple specialized agents working in sequence (plan → explore → build → review)
