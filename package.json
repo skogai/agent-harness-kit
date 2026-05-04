@@ -1,0 +1,52 @@
+{
+  "name": "@cardor/agent-harness-kit",
+  "version": "0.1.0",
+  "description": "CLI scaffolding for multi-agent harness systems",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "bin": {
+    "ahk": "./bin/ahk.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node --test dist/tests/*.test.js",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "keywords": [
+    "agents",
+    "ai",
+    "harness",
+    "claude",
+    "mcp",
+    "scaffolding"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@clack/prompts": "^0.9.0",
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "cli-table3": "^0.6.5",
+    "commander": "^12.1.0",
+    "jiti": "^2.4.2",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.17",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
