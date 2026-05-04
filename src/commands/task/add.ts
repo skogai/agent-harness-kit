@@ -2,6 +2,7 @@ import * as p from '@clack/prompts'
 import pc from 'picocolors'
 import { loadConfig } from '../../core/config.js'
 import { openDB } from '../../core/db.js'
+import { slugify } from '../../core/materializer/scaffold-utils.js'
 
 export async function runTaskAdd(cwd: string): Promise<void> {
   p.intro(pc.bold('agent-harness-kit — add task'))
@@ -52,10 +53,3 @@ export async function runTaskAdd(cwd: string): Promise<void> {
   }
 }
 
-function slugify(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 64)
-}
