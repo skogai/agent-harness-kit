@@ -1,9 +1,10 @@
 name: Test & Publish
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
 
 jobs:
   publish:
@@ -11,14 +12,14 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write   # needed to push git tags
-      id-token: write   # needed for npm OIDC trusted publishing
+      contents: write # needed to push git tags
+      id-token: write # needed for npm OIDC trusted publishing
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # full history required by semantic-version
+          fetch-depth: 0 # full history required by semantic-version
 
       - name: Generate Semantic Version
         id: semantic_version
