@@ -1,5 +1,4 @@
 import { Command } from 'commander'
-import { createRequire } from 'node:module'
 import { runInit } from './commands/init.js'
 import { runBuild } from './commands/build.js'
 import { runHealth } from './commands/health.js'
@@ -10,12 +9,12 @@ import { runMigrate } from './commands/migrate.js'
 import { runExport } from './commands/export.js'
 import { runTaskAdd, runTaskList, runTaskDone } from './commands/task/index.js'
 import { runDashboard } from './commands/dashboard.js'
-
-const require = createRequire(import.meta.url)
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const pkg = require('../package.json') as { version: string }
+import { pkg } from './core/package-data.js'
+import { checkForUpdate, printUpdateMessage } from './core/update-check.js'
 
 const cwd = process.cwd()
+
+const updateCheck = checkForUpdate(pkg.version)
 
 const program = new Command()
 
@@ -136,5 +135,10 @@ program
   .action(async (opts) => {
     await runExport(cwd, opts)
   })
+
+program.hook('postAction', async () => {
+  const update = await updateCheck
+  if (update) printUpdateMessage(update)
+})
 
 program.parse()
