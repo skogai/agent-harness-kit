@@ -1,10 +1,12 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import type { HarnessConfig, Provider, ScaffoldOptions } from '../../types.js'
-import type { Materializer } from './index.js'
-import { HEALTH_SH, agentsMd, featureListJson, agentLead, agentExplorer, agentBuilder, agentReviewer } from './templates.js'
-import { mergeOpencodeJson } from './mcp-merge.js'
-import { writeAgentFile, appendGitignore, slugify } from './scaffold-utils.js'
+
+import { mergeOpencodeJson } from './mcp-merge'
+import { appendGitignore, slugify, writeAgentFile } from './scaffold-utils'
+import { agentBuilder, agentExplorer, agentLead, agentReviewer, agentsMd, featureListJson, HEALTH_SH } from './templates'
+
+import type { HarnessConfig, Provider, ScaffoldOptions } from '@/types'
+import type { Materializer } from './index'
 
 export class OpenCodeMaterializer implements Materializer {
   async scaffold(config: HarnessConfig, opts: ScaffoldOptions): Promise<void> {

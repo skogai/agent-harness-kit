@@ -1,6 +1,7 @@
-import type { HarnessConfig, Provider, ScaffoldOptions } from '../../types.js'
-import { ClaudeCodeMaterializer } from './claude-code.js'
-import { OpenCodeMaterializer } from './opencode.js'
+import { ClaudeCodeMaterializer } from './claude-code'
+import { OpenCodeMaterializer } from './opencode'
+
+import type { HarnessConfig, Provider, ScaffoldOptions } from '@/types'
 
 export interface Materializer {
   scaffold(config: HarnessConfig, opts: ScaffoldOptions): Promise<void>

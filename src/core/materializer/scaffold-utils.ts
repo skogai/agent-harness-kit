@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { GITIGNORE_ENTRIES } from './templates.js'
+
+import { GITIGNORE_ENTRIES } from './templates'
 
 export function writeAgentFile(cwd: string, relPath: string, content: string): void {
   const abs = join(cwd, relPath)
