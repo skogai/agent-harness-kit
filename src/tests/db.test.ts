@@ -109,6 +109,80 @@ describe('HarnessDB', () => {
     assert.equal(ac[0].criterion, 'Must pass tests')
   })
 
+  test('getTaskById returns task by id', () => {
+    const task = db.addTask({ slug: 'find-me', title: 'Find Me' })
+    const found = db.getTaskById(task.id)
+    assert.ok(found)
+    assert.equal(found.slug, 'find-me')
+  })
+
+  test('getTaskById returns null for unknown id', () => {
+    const found = db.getTaskById(99999)
+    assert.equal(found, null)
+  })
+
+  test('updateTaskStatus changes task status', () => {
+    db.addTask({ slug: 'status-test', title: 'Status Test' })
+    const updated = db.updateTaskStatus('status-test', 'done')
+    assert.equal(updated.status, 'done')
+  })
+
+  test('getActionsForTask returns actions for a task', () => {
+    const task = db.addTask({ slug: 'with-actions', title: 'With Actions' })
+    db.startAction(task.id, 'lead')
+    db.startAction(task.id, 'builder')
+    const actions = db.getActionsForTask(task.id)
+    assert.equal(actions.length, 2)
+  })
+
+  test('recordFile stores a file operation', () => {
+    const task = db.addTask({ slug: 'file-task', title: 'File Task' })
+    const action = db.startAction(task.id, 'builder')
+    db.recordFile(action.id, 'src/index.ts', 'modified', 'refactored')
+    const files = db.getFilesForTask(task.id)
+    assert.equal(files.length, 1)
+    assert.equal(files[0].file_path, 'src/index.ts')
+    assert.equal(files[0].operation, 'modified')
+    assert.equal(files[0].notes, 'refactored')
+  })
+
+  test('recordTool stores a tool call', () => {
+    const task = db.addTask({ slug: 'tool-task', title: 'Tool Task' })
+    const action = db.startAction(task.id, 'explorer')
+    db.recordTool(action.id, 'Bash', '{"cmd":"ls"}', 'file list')
+    const top = db.getTopTools(10)
+    assert.equal(top.length, 1)
+    assert.equal(top[0].tool_name, 'Bash')
+    assert.equal(top[0].uses, 1)
+  })
+
+  test('getTopTools returns tools sorted by usage', () => {
+    const task = db.addTask({ slug: 'multi-tools', title: 'Multi Tools' })
+    const action = db.startAction(task.id, 'lead')
+    db.recordTool(action.id, 'Read')
+    db.recordTool(action.id, 'Read')
+    db.recordTool(action.id, 'Bash')
+    const top = db.getTopTools(10)
+    assert.equal(top[0].tool_name, 'Read')
+    assert.equal(top[0].uses, 2)
+    assert.equal(top[1].tool_name, 'Bash')
+    assert.equal(top[1].uses, 1)
+  })
+
+  test('getStatusSummary counts tasks by status', () => {
+    db.addTask({ slug: 'p1', title: 'P1' })
+    db.addTask({ slug: 'p2', title: 'P2' })
+    const t3 = db.addTask({ slug: 'p3', title: 'P3' })
+    db.claimTask(t3.id, 'lead')
+    const summary = db.getStatusSummary()
+    const pending = summary.find((s) => s.status === 'pending')
+    const inProgress = summary.find((s) => s.status === 'in_progress')
+    assert.ok(pending)
+    assert.equal(pending.total, 2)
+    assert.ok(inProgress)
+    assert.equal(inProgress.total, 1)
+  })
+
   test('syncFromFeatureList skips duplicates', () => {
     db.addTask({ slug: 'exists', title: 'Exists' })
     const result = db.syncFromFeatureList([
