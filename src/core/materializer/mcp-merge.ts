@@ -2,6 +2,11 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 
 export function mergeClaudeMcpJson(filePath: string, port: number): void {
+  const folderPath = dirname(filePath)
+  if (!existsSync(folderPath)) {
+    mkdirSync(folderPath, { recursive: true })
+  }
+
   let existing: Record<string, unknown> = {}
   if (existsSync(filePath)) {
     try {
@@ -29,6 +34,11 @@ export function mergeClaudeMcpJson(filePath: string, port: number): void {
 }
 
 export function mergeOpencodeJson(filePath: string, port: number): void {
+  const folderPath = dirname(filePath)
+  if (!existsSync(folderPath)) {
+    mkdirSync(folderPath, { recursive: true })
+  }
+
   let existing: Record<string, unknown> = {}
   if (existsSync(filePath)) {
     try {
@@ -47,8 +57,7 @@ export function mergeOpencodeJson(filePath: string, port: number): void {
       'agent-harness-kit': {
         enabled: true,
         type: 'local',
-        command: 'npx',
-        args: ['ahk', 'serve', '--port', String(port)],
+        command: ['npx', 'ahk', 'serve', '--port', String(port)],
       },
     },
   }

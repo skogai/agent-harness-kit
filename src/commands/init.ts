@@ -171,7 +171,7 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
 
   // ─── Summary ──────────────────────────────────────────────────────────────
   const agentsDir = provider === 'claude-code' ? '.claude/agents/' : '.opencode/agents/'
-  const mcpFile = provider === 'claude-code' ? '.claude/mcp.json' : 'opencode.json'
+  const mcpFile = provider === 'claude-code' ? '.claude/mcp.json' : './opencode/opencode.json'
 
   p.log.success(pc.green('agent-harness-kit.config.ts'))
   p.log.success(pc.green('AGENTS.md'))

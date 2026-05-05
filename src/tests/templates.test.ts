@@ -13,7 +13,7 @@ function teardown() { rmSync(TMP, { recursive: true, force: true }) }
 describe('mergeClaudeMcpJson', () => {
   test('creates file when it does not exist', () => {
     setup()
-    const path = join(TMP, 'mcp.json')
+    const path = join(TMP, '.claude/mcp.json')
     mergeClaudeMcpJson(path, 3456)
     const parsed = JSON.parse(readFileSync(path, 'utf8'))
     assert.ok(parsed.mcpServers['agent-harness-kit'])
@@ -23,7 +23,7 @@ describe('mergeClaudeMcpJson', () => {
 
   test('preserves existing mcpServers entries', () => {
     setup()
-    const path = join(TMP, 'mcp2.json')
+    const path = join(TMP, '.claude/mcp2.json')
     const initial = { mcpServers: { 'other-tool': { command: 'foo', args: [] } } }
     writeFileSync(path, JSON.stringify(initial))
     mergeClaudeMcpJson(path, 3456)
