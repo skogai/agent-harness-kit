@@ -5,7 +5,11 @@ description: >
   relevant files, understands existing patterns, and produces a structured analysis for the
   builder to use. Invoke after the lead has defined a plan and before the builder starts.
   Never invoke for tasks that require writing or modifying files.
-tools: Read, Glob, Grep
+tools:
+  read: true
+  write: false
+  edit: false
+  bash: true
 ---
 
 # Explorer Agent — {{projectName}}

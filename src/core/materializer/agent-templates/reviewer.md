@@ -5,7 +5,11 @@ description: >
   for the current task. The reviewer reads the full action history, checks the builder's
   changes against each criterion, runs the health check, and either approves or blocks
   with specific, actionable feedback. Invoke only after the builder has completed its action.
-tools: Read, Bash, Glob, Grep
+tools:
+  read: true
+  write: false
+  edit: false
+  bash: true
 ---
 
 # Reviewer Agent — {{projectName}}

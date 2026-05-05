@@ -5,7 +5,11 @@ description: >
   delegate to explorer, builder, and reviewer in sequence, and close the session correctly.
   Invoke when starting a new work session, picking up a pending task, or when another agent
   reports a blocker that requires re-coordination.
-tools: Read, Glob, Grep
+tools:
+  read: true
+  write: false
+  edit: false
+  bash: true
 ---
 
 # Lead Agent — {{projectName}}
