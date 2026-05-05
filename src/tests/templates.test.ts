@@ -13,17 +13,19 @@ function teardown() { rmSync(TMP, { recursive: true, force: true }) }
 describe('mergeClaudeMcpJson', () => {
   test('creates file when it does not exist', () => {
     setup()
-    const path = join(TMP, '.claude/mcp.json')
+    const path = join(TMP, '.mcp.json')
     mergeClaudeMcpJson(path, 3456)
     const parsed = JSON.parse(readFileSync(path, 'utf8'))
-    assert.ok(parsed.mcpServers['agent-harness-kit'])
-    assert.equal(parsed.mcpServers['agent-harness-kit'].args[3], '3456')
+    const entry = parsed.mcpServers['agent-harness-kit']
+    assert.ok(entry)
+    assert.equal(entry.type, 'stdio')
+    assert.equal(entry.args[3], '3456')
     teardown()
   })
 
   test('preserves existing mcpServers entries', () => {
     setup()
-    const path = join(TMP, '.claude/mcp2.json')
+    const path = join(TMP, '.mcp2.json')
     const initial = { mcpServers: { 'other-tool': { command: 'foo', args: [] } } }
     writeFileSync(path, JSON.stringify(initial))
     mergeClaudeMcpJson(path, 3456)
@@ -40,14 +42,18 @@ describe('mergeOpencodeJson', () => {
     const path = join(TMP, 'opencode.json')
     mergeOpencodeJson(path, 3456)
     const parsed = JSON.parse(readFileSync(path, 'utf8'))
-    assert.ok(parsed.mcp['agent-harness-kit'])
+    const entry = parsed.mcp['agent-harness-kit']
+    assert.ok(entry)
+    assert.equal(entry.type, 'local')
+    assert.ok(Array.isArray(entry.command))
+    assert.equal(entry.command[entry.command.length - 1], '3456')
     teardown()
   })
 
-  test('preserves existing mcp.entries', () => {
+  test('preserves existing mcp entries', () => {
     setup()
     const path = join(TMP, 'opencode2.json')
-    const initial = { mcp: { 'other': { command: 'bar', args: [] } } }
+    const initial = { mcp: { 'other': { type: 'local', command: ['bar'] } } }
     writeFileSync(path, JSON.stringify(initial))
     mergeOpencodeJson(path, 3456)
     const parsed = JSON.parse(readFileSync(path, 'utf8'))
