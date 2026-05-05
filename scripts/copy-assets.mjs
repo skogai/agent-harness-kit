@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 // ─── Agent templates ──────────────────────────────────────────────────────────
 const SRC = 'src/core/materializer/agent-templates'
-const DEST = 'dist/core/materializer/agent-templates'
+const DEST = 'dist/agent-templates'
 
 mkdirSync(DEST, { recursive: true })
 
