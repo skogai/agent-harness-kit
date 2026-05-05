@@ -162,7 +162,7 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
     }
 
     db.close()
-    spinner.stop('Done')
+    spinner.stop('')
   } catch (err) {
     spinner.stop('Failed')
     p.log.error(err instanceof Error ? err.message : String(err))
@@ -173,28 +173,20 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
   const agentsDir = provider === 'claude-code' ? '.claude/agents/' : '.opencode/agents/'
   const mcpFile = provider === 'claude-code' ? '.claude/mcp.json' : './opencode/opencode.json'
 
-  p.log.success(pc.green('agent-harness-kit.config.ts'))
-  p.log.success(pc.green('AGENTS.md'))
-  p.log.success(pc.green('health.sh') + pc.dim('                   ← exits 1 until you implement it'))
-  p.log.success(pc.green(`.harness/feature_list.json`) + (firstTask ? pc.dim('  ← 1 task added') : ''))
-  p.log.success(pc.green('.harness/harness.db') + pc.dim('         ← SQLite schema initialized'))
-  p.log.success(pc.green('.harness/current.md'))
-  p.log.success(pc.green(`${agentsDir}lead.md`))
-  p.log.success(pc.green(`${agentsDir}explorer.md`))
-  p.log.success(pc.green(`${agentsDir}builder.md`))
-  p.log.success(pc.green(`${agentsDir}reviewer.md`))
-  p.log.success(pc.green(mcpFile))
-  p.log.success(pc.green('.gitignore entries added'))
-
-  p.log.warn(pc.yellow('health.sh exits 1 — implement it before agents start working.'))
-
-  p.outro(
-    [
-      pc.bold('Next steps:'),
-      `  → Edit ${pc.cyan('health.sh')} with your project's checks`,
-      `  → ${pc.cyan('ahk task add')}  to add more tasks`,
-      `  → Open ${provider === 'claude-code' ? 'Claude Code' : 'OpenCode'} in this directory and let agents work`,
-    ].join('\n')
-  )
+  console.log('')
+  console.log(pc.green('✓ agent-harness-kit.config.ts'))
+  console.log(pc.green('✓ AGENTS.md'))
+  console.log(pc.green('✓ health.sh'))
+  console.log(pc.green('✓ .harness/harness.db'))
+  console.log(pc.green('✓ .harness/current.md'))
+  console.log(pc.green(`✓ ${agentsDir}lead.md`))
+  console.log(pc.green(`✓ ${agentsDir}explorer.md`))
+  console.log(pc.green(`✓ ${agentsDir}builder.md`))
+  console.log(pc.green(`✓ ${agentsDir}reviewer.md`))
+  console.log(pc.green(`✓ ${mcpFile}`))
+  console.log(pc.green('✓ .gitignore entries added'))
+  console.log('')
+  console.log(pc.cyan('→') + ` Edit ${pc.cyan('health.sh')} with your project checks`)
+  console.log(pc.cyan('→') + ` ${pc.cyan('ahk task add')} to queue work for agents`)
 }
 
