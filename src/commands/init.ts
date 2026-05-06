@@ -7,6 +7,7 @@ import { openDB } from '@/core/db'
 import { getMaterializer } from '@/core/materializer/index'
 import { slugify } from '@/core/materializer/scaffold-utils'
 import { configTs } from '@/core/materializer/templates'
+
 import { applyConfigDefaults } from './init-helpers'
 
 import type { Provider } from '@/types'
@@ -173,7 +174,7 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
 
   // ─── Summary ──────────────────────────────────────────────────────────────
   const agentsDir = provider === 'claude-code' ? '.claude/agents/' : '.opencode/agents/'
-  const mcpFile = provider === 'claude-code' ? '.claude/mcp.json' : './opencode/opencode.json'
+  const mcpFile = provider === 'claude-code' ? '.claude/mcp.json' : './opencode.json'
 
   console.log('')
   console.log(pc.green('✓ agent-harness-kit.config.ts'))
