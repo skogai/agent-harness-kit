@@ -98,10 +98,13 @@ ahk init
 
 ### `ahk init`
 
-Interactive scaffold. Asks for your project name, description, AI provider, docs path, and an optional first task. Creates all harness files in the current directory.
+Interactive scaffold. Asks for your project name, AI provider, docs path, task adapter, and an optional first task. Creates all harness files in the current directory.
 
 ```bash
 ahk init
+
+# Skip prompts with flags
+ahk init --name "my-app" --provider claude-code --docs ./docs --tasks local
 ```
 
 Run this once per project. Safe to re-run — it will not overwrite files you've customized.
@@ -119,9 +122,35 @@ ahk build --watch    # watch mode: rebuilds automatically on config changes
 
 ---
 
+### `ahk dashboard`
+
+Opens a local web dashboard to visualize everything stored in the harness database — tasks, agent actions, file operations, tool usage, and live timelines. Updates in real time via WebSocket as agents work.
+
+```bash
+ahk dashboard                  # opens http://localhost:4242 in your browser
+ahk dashboard --port 8080      # custom port
+ahk dashboard --no-open        # start server without opening browser
+```
+
+The dashboard includes:
+
+| View | What it shows |
+|------|--------------|
+| **Overview** | Status counts, active tasks with acceptance progress, recent agent activity |
+| **Tasks** | Full task list, filterable by status, with acceptance progress bars |
+| **Task detail** | Acceptance criteria, action timeline per agent, files touched, tools used |
+| **Agents** | Per-role breakdown: actions, tasks worked, files touched, completion rate |
+| **Tools** | Top tools bar chart + full log of recent tool calls with args and results |
+| **Files** | Most-touched files with operation breakdown + recent file operation log |
+
+![Dashboard](./assets/ahk-dashboard.png)
+
+
+---
+
 ### `ahk status`
 
-Shows the current task table and any active agent actions.
+Shows the current task table and any active agent actions in the terminal.
 
 ```bash
 ahk status
@@ -142,11 +171,14 @@ ahk health
 
 ### `ahk sync`
 
-Syncs `.harness/feature_list.json` into the SQLite database. Tasks already in the DB are skipped (by slug). Use this to seed the backlog from the JSON file without duplicating existing tasks.
+Syncs `.harness/feature_list.json` ↔ SQLite. Tasks already in the DB are skipped by slug. Use this to seed the backlog from the JSON file without duplicating existing tasks.
 
 ```bash
-ahk sync
-ahk sync --dry-run    # preview changes without applying them
+ahk sync                         # both directions (default)
+ahk sync --direction in          # JSON → SQLite only
+ahk sync --direction out         # SQLite → JSON only
+ahk sync --dry-run               # preview changes without applying them
+ahk sync --dry-run --direction in
 ```
 
 ---
@@ -157,7 +189,7 @@ Starts the MCP server on stdio. **You never need to call this manually.** After 
 
 ```bash
 ahk serve
-ahk serve --port 3456    # default port (used only for config reference)
+ahk serve --port 3456    # store a port hint in config (stdio transport only)
 ```
 
 ---
@@ -182,13 +214,14 @@ ahk task list --status pending
 ahk task list --status in_progress
 ahk task list --status done
 ahk task list --status blocked
+ahk task list --json             # machine-readable output
 ```
 
 ---
 
 ### `ahk task done <id|slug>`
 
-Marks a task as done. Runs the health check first — if health fails, the task is not closed.
+Marks a task as done. Runs the health check first if health is required — if it fails, the task is not closed.
 
 ```bash
 ahk task done 3
@@ -199,7 +232,7 @@ ahk task done add-auth-flow
 
 ### `ahk migrate`
 
-Migrates provider-specific files from one provider to another. Useful when switching from Claude Code to OpenCode or vice versa.
+Migrates provider-specific files from one AI provider to another. Useful when switching from Claude Code to OpenCode or vice versa.
 
 ```bash
 ahk migrate --to opencode
@@ -210,11 +243,13 @@ ahk migrate --to claude-code
 
 ### `ahk export`
 
-Exports the full database (tasks, actions, sections) as JSON. Useful for backups or external reporting.
+Exports the full database as JSON or SQL. Useful for backups, external reporting, or migrating data.
 
 ```bash
-ahk export --json
-ahk export --json > snapshot.json
+ahk export --json                        # JSON to stdout
+ahk export --json --output snapshot.json # JSON to file
+ahk export --sql                         # SQL dump to stdout
+ahk export --sql --output dump.sql       # SQL dump to file
 ```
 
 ---
@@ -435,10 +470,22 @@ The rule: commit inputs (config, task definitions, agent instructions). Ignore o
 git clone <repo-url>
 cd agent-harness-kit
 npm install
-npm run build       # compile src/ → dist/
-npm run dev         # watch mode
+
+npm run build:ui    # build the dashboard SPA (dashboard/ → src/dashboard-dist/)
+npm run build       # build:ui + tsc + copy-assets
+npm run dev         # watch mode (CLI TypeScript only)
 npm test            # run tests
 npm link            # register ahk globally from local source
+```
+
+To work on the dashboard UI with hot reload:
+
+```bash
+# Terminal 1 — CLI server (no browser open)
+cd your-test-project && ahk dashboard --no-open --port 4242
+
+# Terminal 2 — Vite dev server with HMR
+cd dashboard && npm run dev   # http://localhost:5173, proxies /api and /ws → :4242
 ```
 
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) with a required scope:
@@ -455,11 +502,8 @@ Types: `feat fix chore refactor docs test perf style build ci revert`
 
 ## Roadmap
 
-These are planned features, not yet released:
-
+- ✅ **`ahk dashboard`** — local web UI with real-time WebSocket updates. Shows tasks, action timelines, file activity, tool usage, and per-agent breakdowns. Run `ahk dashboard` in any initialized project.
+- **Jira task adapter** — pull tasks directly from Jira instead of maintaining `feature_list.json` manually. The `tasks.adapter` config key is already wired for this.
+- **Linear task adapter** — same as Jira, for Linear.
+- **GitHub Issues adapter** — same, for GitHub Issues.
 - **Remote MCP adapter** — connect to a hosted MCP server instead of a local SQLite file. Enables shared task state across machines and team members without syncing a DB file.
-- **Shared action log** — a web interface (or CLI dashboard) to view the full history of what every agent did, across all sessions, for a given project. Useful for team retrospectives and debugging agent behavior.
-- **Jira / Linear task adapter** — pull tasks directly from your existing issue tracker instead of maintaining `feature_list.json` manually. The `tasks.adapter` config key is already wired for this.
-- **Agent telemetry** — per-session statistics on tool usage, files touched, and time spent per role. Exported as JSON or pushed to a remote endpoint.
-- **Multi-project harness** — a single MCP server managing multiple projects, with project-scoped task isolation.
-- **Custom agent roles** — the config already has a `custom: []` field. The roadmap item is full CLI support for generating, registering, and routing tasks to custom-named agents beyond the default four.
