@@ -13,7 +13,7 @@
 # Until you implement it, this script intentionally exits 1
 # so agents know the environment is not verified.
 
-# echo "health.sh not implemented yet."
-# echo "Edit this file with your project's health checks."
-# echo "It must exit 0 for agents to start working."
-exit 0
+echo "health.sh not implemented yet."
+echo "Edit this file with your project's health checks."
+echo "It must exit 0 for agents to start working."
+exit 1

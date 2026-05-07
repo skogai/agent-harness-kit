@@ -1,10 +1,10 @@
-# AGENTS.md — agnet-harness-kit
+# AGENTS.md — @cardor/agent-harness-kit
 
 > **Read this file first.** It is the navigation map for every AI agent working in this repository.
 
 ## Project
 
-**agnet-harness-kit** — CLI Tool to setup agnet harness scaffolding
+**@cardor/agent-harness-kit** — A CLI tool for agent harness scaffolding
 
 ## Health check (run before starting)
 

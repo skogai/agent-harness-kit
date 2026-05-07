@@ -33,6 +33,7 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
     const val = await p.text({
       message: 'Project name',
       placeholder: 'my-app',
+      ...(detectedName && { initialValue: detectedName }),
       validate: (v) => (v.trim() ? undefined : 'Project name is required'),
     })
     if (p.isCancel(val)) { p.cancel('Cancelled.'); process.exit(0) }

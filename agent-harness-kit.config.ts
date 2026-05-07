@@ -2,8 +2,8 @@ import { defineHarness } from '@cardor/agent-harness-kit'
 
 export default defineHarness({
   project: {
-    name: 'agnet-harness-kit',
-    description: 'CLI Tool to setup agnet harness scaffolding',
+    name: '@cardor/agent-harness-kit',
+    description: 'A CLI tool for agent harness scaffolding',
     docsPath: './docs',
   },
 
