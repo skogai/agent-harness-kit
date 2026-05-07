@@ -9,6 +9,7 @@ export default defineConfig({
   format:    'esm',
   target:    'node22',
   platform:  'node',
+  dts:       true,
   sourcemap: true,
   clean:     true,
   // tsup resolves path aliases from tsconfig.json automatically
