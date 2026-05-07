@@ -32,7 +32,7 @@ export function checkForUpdate(currentVersion: string): Promise<UpdateInfo | nul
 export function printUpdateMessage({ current, latest }: UpdateInfo): void {
   const lines = [
     `  Update available ${pc.dim(current)} → ${pc.green(latest)}  `,
-    `  Run: ${pc.cyan(`npm i -g ${pkg.name}@latest`)}          `,
+    `  Run: ${pc.cyan(`npm i ${pkg.name}@${latest}`)}          `,
   ]
   const width = Math.max(...lines.map((l) => stripAnsi(l).length))
   const border = '─'.repeat(width)
