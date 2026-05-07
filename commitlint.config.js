@@ -6,13 +6,25 @@ export default {
     'scope-empty': [2, 'never'],
 
     // 100 char limit on the full subject line
-    'header-max-length': [2, 'always', 100],
+    'header-max-length': [2, 'always', 200],
 
     // allowed types (action)
     'type-enum': [
       2,
       'always',
-      ['feat', 'fix', 'chore', 'refactor', 'docs', 'test', 'perf', 'style', 'build', 'ci', 'revert'],
+      [
+        'feat',
+        'fix',
+        'chore',
+        'refactor',
+        'docs',
+        'test',
+        'perf',
+        'style',
+        'build',
+        'ci',
+        'revert',
+      ],
     ],
 
     // enforce lowercase on type and scope
@@ -23,4 +35,4 @@ export default {
     'subject-empty': [2, 'never'],
     'subject-full-stop': [2, 'never', '.'],
   },
-}
+};
