@@ -14,5 +14,4 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-echo "Health check passed. Proceeding with deployment."
 exit 0

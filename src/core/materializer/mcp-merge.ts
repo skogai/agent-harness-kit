@@ -35,6 +35,7 @@ export function mergeClaudeMcpJson(filePath: string, port: number): void {
   const merged = {
     ...existing,
     compaction: existing.compaction ?? compactionConfig.compaction,
+    default_agent: "lead",
     mcpServers: {
       ...((existing.mcpServers as Record<string, unknown>) ?? {}),
       'agent-harness-kit': agentHarnessKitConfig,
@@ -71,6 +72,7 @@ export function mergeOpencodeJson(filePath: string, port: number): void {
   const merged = {
     ...existing,
     compaction: existing.compaction ?? compactionConfig.compaction,
+    default_agent: "lead",
     mcp: {
       ...existingMcp,
       'agent-harness-kit': agentHarnessKitConfig,
