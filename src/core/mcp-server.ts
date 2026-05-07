@@ -10,7 +10,7 @@ import {
 
 import { type HarnessDB, openDB } from './db'
 
-import type { AgentName, HarnessConfig, TaskStatus } from '@/types'
+import type { ActionFileRow, AgentName, HarnessConfig, TaskStatus } from '@/types'
 
 const VERSION = '0.1.0'
 
@@ -35,14 +35,14 @@ const TOOLS = [
   {
     name: 'actions.write',
     description:
-      'Record a section in an action. Standard sections: result, tools_used, files_modified, blockers, next_steps.',
+      'Record a section in an action. Standard sections: result, tools_used, blockers, next_steps. Note: files_modified is a plain-text note only — it does NOT populate the files dashboard. Use actions.record_file to register files in the dashboard.',
     inputSchema: {
       type: 'object',
       properties: {
         actionId: { type: 'string', description: 'UUID returned by actions.start' },
         sectionType: {
           type: 'string',
-          description: 'Section name: result | tools_used | files_modified | blockers | next_steps | <custom>',
+          description: 'Section name: result | tools_used | blockers | next_steps | <custom>. Do NOT use files_modified to track files — it is stored as plain text only. Use actions.record_file instead.',
         },
         content: { type: 'string', description: 'Content for this section' },
       },
@@ -123,6 +123,36 @@ const TOOLS = [
         query: { type: 'string', description: 'Search terms' },
       },
       required: ['query'],
+    },
+  },
+  {
+    name: 'actions.record_file',
+    description:
+      'Record a file touched during an action. This is the only way to populate the files-touched count shown in the dashboard. Call once per file.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        actionId: { type: 'string', description: 'UUID returned by actions.start' },
+        filePath: { type: 'string', description: 'Absolute or repo-relative path of the file' },
+        operation: {
+          type: 'string',
+          enum: ['read', 'created', 'modified', 'deleted'],
+          description: 'What was done to the file',
+        },
+        notes: { type: 'string', description: 'Optional short note about the change' },
+      },
+      required: ['actionId', 'filePath', 'operation'],
+    },
+  },
+  {
+    name: 'tasks.acceptance.update',
+    description: 'Mark an acceptance criterion as met. Use the criterion id from tasks.get.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        criterionId: { type: 'number', description: 'The id of the acceptance criterion to mark as met' },
+      },
+      required: ['criterionId'],
     },
   },
 ] as const
@@ -226,6 +256,21 @@ async function dispatch(
       const query = str(args, 'query')
       const results = searchDocs(docsPath, query)
       return ok(JSON.stringify(results, null, 2))
+    }
+
+    case 'actions.record_file': {
+      const actionId = str(args, 'actionId')
+      const filePath = str(args, 'filePath')
+      const operation = str(args, 'operation') as ActionFileRow['operation']
+      const notes = args['notes'] as string | undefined
+      db.recordFile(actionId, filePath, operation, notes)
+      return ok(JSON.stringify({ actionId, filePath, operation, recorded: true }))
+    }
+
+    case 'tasks.acceptance.update': {
+      const criterionId = num(args, 'criterionId')
+      db.markAcceptanceMet(criterionId)
+      return ok(JSON.stringify({ criterionId, met: true }))
     }
 
     default:

@@ -437,6 +437,12 @@ export class HarnessDB {
     return { added, skipped }
   }
 
+  markAcceptanceMet(criterionId: number): void {
+    this.db
+      .prepare(`UPDATE task_acceptance SET met = 1 WHERE id = ?`)
+      .run(criterionId)
+  }
+
   writeFeatureList(cwd: string): void {
     const tasks = this.getTasks()
     const list = tasks.map((t) => ({
