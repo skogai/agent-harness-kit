@@ -62,8 +62,10 @@ Everything is stored locally in a SQLite database (`.harness/harness.db`). No cl
 - **Health gate** — agents must run `health.sh` and get a green exit before starting or closing any task. You define what "healthy" means.
 - **Markdown fallback** — `current.md` is always regenerated so agents can understand the session state even without the MCP server.
 - **Docs search** — agents can call `docs.search(query)` to find relevant content in your project's docs folder before writing code.
-- **Zero native dependencies** — uses `node:sqlite` (Node ≥ 22) or `bun:sqlite` (Bun) built-in. No native compilation, no `node-gyp`.
+- **Multi-database support** — SQLite by default (zero native deps, uses `node:sqlite` on Node ≥ 22 or `bun:sqlite` on Bun). Switch to PostgreSQL or MySQL with a single config line — same schema, same MCP tools, same workflow.
 - **Incremental scaffold** — `ahk init` and `ahk build` never overwrite files you've customized. Agent definitions you've edited are preserved.
+- **Global installation** — `ahk init` can scaffold the harness into your home directory (`~/.claude` or `~/.config/opencode`) to share it across all projects.
+- **Input validation** — CLI prompts validate all inputs (name length, path format, task title, etc.) and retry with the error message instead of silently accepting bad values.
 
 ---
 
@@ -98,7 +100,7 @@ ahk init
 
 ### `ahk init`
 
-Interactive scaffold. Asks for your project name, AI provider, docs path, task adapter, and an optional first task. Creates all harness files in the current directory.
+Interactive scaffold. Asks for your project name, description, AI provider, whether to install globally, docs path, task adapter, and an optional first task. Creates all harness files in the current directory (or home directory if global).
 
 ```bash
 ahk init
@@ -108,6 +110,8 @@ ahk init --name "my-app" --provider claude-code --docs ./docs --tasks local
 ```
 
 Run this once per project. Safe to re-run — it will not overwrite files you've customized.
+
+**Global installation** — if you answer yes to "Install globally?", files go to `~/.claude` (Claude Code) or `~/.config/opencode` (OpenCode). This lets you share one harness config across all your projects.
 
 ---
 
@@ -230,6 +234,26 @@ ahk task done add-auth-flow
 
 ---
 
+### `ahk reset`
+
+Clears harness data interactively. Only SQLite databases are managed by this command — remote Postgres/MySQL databases are intentionally skipped.
+
+```bash
+ahk reset                          # interactive — asks before deleting each item
+ahk reset --force                  # skip all confirmation prompts
+ahk reset --provider claude-code   # also delete agent .md files for this provider
+ahk reset --provider opencode
+```
+
+What it can reset:
+- The SQLite `.db` file (plus WAL and SHM files if present)
+- `.harness/feature_list.json`
+- Agent `.md` files in `.claude/agents/` or `.opencode/agents/`
+
+After a reset, run `ahk init` to scaffold a fresh harness.
+
+---
+
 ### `ahk migrate`
 
 Migrates provider-specific files from one AI provider to another. Useful when switching from Claude Code to OpenCode or vice versa.
@@ -315,10 +339,19 @@ export default defineHarness({
     custom:   [],                 // define extra agents here
   },
 
+  // ── Database ──────────────────────────────────────────────────────────────
+  // SQLite (default — zero native deps, Node 22+ or Bun)
+  database: { type: 'sqlite', path: '.harness/harness.db' },
+
+  // PostgreSQL — uncomment to use instead:
+  // database: { type: 'postgres', connectionString: process.env.DATABASE_URL },
+
+  // MySQL — uncomment to use instead:
+  // database: { type: 'mysql', connectionString: process.env.DATABASE_URL },
+
   storage: {
-    dir:    '.harness',
-    dbPath: '.harness/harness.db',
-    tasks:  { adapter: 'local' },
+    dir:   '.harness',
+    tasks: { adapter: 'local' },  // 'local' | 'jira' | 'linear' | 'mcp'
     sections: {
       toolsUsed:     true,        // log which tools agents used
       filesModified: true,        // log which files were touched
@@ -335,7 +368,7 @@ export default defineHarness({
   },
 
   tools: {
-    mcp:     { enabled: true, port: 3456 },
+    mcp:     { enabled: true, port: 3742 },
     scripts: { enabled: true, outputDir: './.harness/scripts' },
   },
 })
@@ -418,10 +451,14 @@ The harness exposes these tools via MCP. Agents use them instead of reading file
 | `tasks.get` | `status?` | List tasks, optionally filtered by `pending \| in_progress \| done \| blocked` |
 | `tasks.claim` | `id, agent` | Atomically claim a pending task. Returns `task_already_claimed` if another agent got it first |
 | `tasks.update` | `id, status` | Change task status |
+| `tasks.add` | `title, slug?, description?, acceptance?` | Create a new task directly from MCP (agents can queue work on the fly) |
+| `tasks.acceptance.update` | `criterionId` | Mark an acceptance criterion as met. Criterion IDs come from `tasks.get` |
 | `actions.start` | `taskId, agent` | Start a new action, returns `actionId` |
-| `actions.write` | `actionId, sectionType, content` | Record a section: `result \| tools_used \| files_modified \| blockers \| next_steps` |
+| `actions.write` | `actionId, sectionType, content` | Record a text section: `result \| tools_used \| blockers \| next_steps`. Does **not** populate the Files dashboard — use `actions.record_file` for that |
 | `actions.complete` | `actionId, summary` | Close an action with a one-line summary |
 | `actions.get` | `taskId` | Full action history for a task (all agents, all sections) |
+| `actions.record_file` | `actionId, filePath, operation, notes?` | Register a file touch. The **only** way to populate the Files dashboard. `operation`: `read \| created \| modified \| deleted` |
+| `actions.record_tool` | `actionId, toolName, argsJson?, resultSummary?` | Register a tool call. The **only** way to populate the Tools dashboard |
 | `docs.search` | `query` | Search the `docsPath` folder for content matching the query |
 
 ---
@@ -456,11 +493,18 @@ The rule: commit inputs (config, task definitions, agent instructions). Ignore o
 
 ## Runtime compatibility
 
-| Runtime | Support |
-|---------|---------|
-| Node.js ≥ 22 | ✅ uses `node:sqlite` built-in |
-| Bun (any recent) | ✅ uses `bun:sqlite` built-in |
-| Node.js < 22 | ❌ `node:sqlite` not available |
+| Runtime | SQLite | PostgreSQL | MySQL |
+|---------|--------|-----------|-------|
+| Node.js ≥ 22 | ✅ uses `node:sqlite` built-in | ✅ via `postgres` package | ✅ via `mysql2` package |
+| Bun (any recent) | ✅ uses `bun:sqlite` built-in | ✅ via `postgres` package | ✅ via `mysql2` package |
+| Node.js < 22 | ❌ `node:sqlite` not available | ✅ | ✅ |
+
+SQLite requires no additional packages. For PostgreSQL install `postgres`, for MySQL install `mysql2`:
+
+```bash
+npm install postgres    # for PostgreSQL
+npm install mysql2      # for MySQL
+```
 
 ---
 
@@ -532,9 +576,16 @@ Types: `feat fix chore refactor docs test perf style build ci revert`
 
 ## Roadmap
 
-- ✅ **`ahk dashboard`** — local web UI with real-time WebSocket updates. Shows tasks, action timelines, file activity, tool usage, and per-agent breakdowns. Run `ahk dashboard` in any initialized project.
-- **Open Telemetry integration** — emit OpenTelemetry spans for all agent actions, file operations, and tool calls. Enables distributed tracing and integration with any OT-compatible observability platform.
-- **Jira task adapter** — pull tasks directly from Jira instead of maintaining `feature_list.json` manually. The `tasks.adapter` config key is already wired for this.
+- ✅ **`ahk dashboard`** — local web UI with real-time WebSocket updates. Shows tasks, action timelines, file activity, tool usage, and per-agent breakdowns.
+- ✅ **`ahk reset`** — interactively clear the SQLite DB, feature list, and agent files to start a project fresh.
+- ✅ **PostgreSQL + MySQL drivers** — remote database support via `postgres` and `mysql2` packages. Configure with `database: { type: 'postgres', connectionString: '...' }`.
+- ✅ **`actions.record_file` + `actions.record_tool`** — dedicated MCP tools for populating the Files and Tools dashboard views.
+- ✅ **`tasks.add` via MCP** — agents can create new tasks on the fly without leaving the conversation.
+- ✅ **Global installation** — `ahk init` can install the harness to your home directory, shared across projects.
+- ✅ **Input validation** — all CLI prompts validate and retry on bad values.
+- **Graphify integration** — connect the harness to Graphify to visualize agent workflows, task dependencies, and action timelines as interactive graphs.
+- **Open Telemetry integration** — emit OpenTelemetry spans for all agent actions, file operations, and tool calls.
+- **Jira task adapter** — pull tasks directly from Jira instead of maintaining `feature_list.json` manually.
 - **Linear task adapter** — same as Jira, for Linear.
 - **GitHub Issues adapter** — same, for GitHub Issues.
 - **Remote MCP adapter** — connect to a hosted MCP server instead of a local SQLite file. Enables shared task state across machines and team members without syncing a DB file.
