@@ -19,9 +19,9 @@ const config: HarnessConfig = {
     reviewer: { instructionsPath: null },
     custom: [],
   },
+  database: { type: 'sqlite', path: join(TMP, 'test.db') },
   storage: {
     dir: '.harness',
-    dbPath: join(TMP, 'test.db'),
     tasks: { adapter: 'local' },
     sections: { toolsUsed: true, filesModified: true, result: true, blockers: true, nextSteps: false },
     markdownFallback: { enabled: false, path: join(TMP, 'current.md') },

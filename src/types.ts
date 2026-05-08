@@ -41,23 +41,23 @@ export interface ActionSections {
   nextSteps: boolean
 }
 
-export interface DatabaseConfig {
-  type: 'sqlite' | 'postgres' | 'mysql'
-  /** SQLite only — path to the .db file */
-  dbPath?: string
-  /** Postgres / MySQL — full connection URL (postgres://... or mysql://...) */
-  connectionString?: string
-  /** Postgres / MySQL — individual connection fields (alternative to connectionString) */
-  host?: string
-  port?: number
-  user?: string
-  password?: string
-  database?: string
+export interface SQLiteConfig {
+  type: 'sqlite'
+  /** Path to the .db file, relative to cwd */
+  path: string
 }
 
+export interface RemoteDBConfig {
+  type: 'postgres' | 'mysql'
+  /** Full connection URL — postgres://user:pass@host:5432/db or mysql://... */
+  connectionString: string
+}
+
+export type DatabaseConfig = SQLiteConfig | RemoteDBConfig
+
 export interface StorageConfig {
+  /** Directory for local harness files: current.md, feature_list.json, scripts */
   dir: string
-  dbPath: string
   tasks: { adapter: TasksAdapter; [key: string]: unknown }
   sections: ActionSections
   markdownFallback: { enabled: boolean; path: string }
@@ -78,7 +78,7 @@ export interface HarnessConfig {
   provider: Provider
   agents: AgentsConfig
   storage: StorageConfig
-  database?: DatabaseConfig
+  database: DatabaseConfig
   health: HealthConfig
   tools: ToolsConfig
 }
