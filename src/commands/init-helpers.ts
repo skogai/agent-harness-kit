@@ -44,9 +44,9 @@ export function applyConfigDefaults(params: {
       reviewer: { instructionsPath: null },
       custom: [],
     },
+    database: { type: 'sqlite' as const, path: '.harness/harness.db' },
     storage: {
       dir: '.harness',
-      dbPath: '.harness/harness.db',
       tasks: { adapter: params.tasksAdapter as 'local' },
       sections: {
         toolsUsed: true,

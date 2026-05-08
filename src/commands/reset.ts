@@ -27,7 +27,7 @@ async function resetAgentMds(cwd: string, provider: 'claude-code' | 'opencode'):
   try {
     const files = readdirSync(agentDirPath)
     for (const f of files) {
-      if (f.endsWith('.md')) {
+      if (f.endsWith('.md') && AGENT_MD_FILES.includes(f.replace('.md', ''))) {
         existingFiles.push(f)
       }
     }
@@ -76,7 +76,7 @@ export async function runReset(cwd: string, opts: ResetOptions): Promise<void> {
   }
 
   const storageDir = config.storage.dir || '.harness'
-  const dbPath = resolve(cwd, storageDir, 'harness.db')
+  const dbPath = config.database.type === 'sqlite' ? resolve(cwd, config.database.path) : null
   const featureListPath = resolve(cwd, storageDir, 'feature_list.json')
 
   let resetDb = false
@@ -85,21 +85,28 @@ export async function runReset(cwd: string, opts: ResetOptions): Promise<void> {
 
   // ─── Determine what to reset ────────────────────────────────────────────────
 
-  // Reset DB?
-  if (existsSync(dbPath)) {
+  // Reset DB? (SQLite only — remote DBs are not reset by this command)
+  if (dbPath && existsSync(dbPath)) {
     if (opts.force) {
       resetDb = true
     } else {
-      const confirm = await p.confirm({
-        message: `Delete database (${storageDir}/harness.db)?`,
-        initialValue: true,
-      })
-      if (p.isCancel(confirm)) {
-        console.log(pc.red('  Cancelled by user.'))
-        return
+      if (config.database.type !== 'sqlite') {
+        console.log(pc.yellow(`  Skipping DB reset — database type "${config.database.type}" is not managed by this command.`))
+        resetDb = false
+      } else {
+        const confirm = await p.confirm({
+          message: `Delete database (${config.database.path})?`,
+          initialValue: true,
+        })
+        if (p.isCancel(confirm)) {
+          console.log(pc.red('  Cancelled by user.'))
+          return
+        }
+        resetDb = confirm
       }
-      resetDb = confirm
     }
+  } else if (!dbPath) {
+    console.log(pc.dim(`  Skipping DB reset — remote ${config.database.type} database is not managed by this command.`))
   }
 
   // Reset feature_list.json?
@@ -125,13 +132,12 @@ export async function runReset(cwd: string, opts: ResetOptions): Promise<void> {
   }
 
   // ─── Perform resets ─────────────────────────────────────────────────
-  let changed = false
-
-  if (resetDb) {
+  if (resetDb && dbPath) {
     try {
       rmSync(dbPath, { force: true })
-      console.log(pc.green(`  ✓ Removed ${storageDir}/harness.db`))
-      changed = true
+      rmSync(`${dbPath}-wal`, { force: true }) // also remove WAL file if it exists (only for SQLite)
+      rmSync(`${dbPath}-shm`, { force: true }) // also remove SHM file if it exists (only for SQLite)
+      console.log(pc.green(`  ✓ Removed ${dbPath}`))
     } catch {
       console.error(pc.red(`  ✗ Failed to remove ${dbPath}`))
     }
@@ -141,7 +147,7 @@ export async function runReset(cwd: string, opts: ResetOptions): Promise<void> {
     try {
       rmSync(featureListPath, { force: true })
       console.log(pc.green(`  ✓ Removed ${storageDir}/feature_list.json`))
-      changed = true
+      //  = true
     } catch {
       console.error(pc.red(`  ✗ Failed to remove ${featureListPath}`))
     }

@@ -23,9 +23,16 @@ export async function runHealth(cwd: string): Promise<void> {
   let allOk = true
 
   // ─── [checking DB] ──────────────────────────────────────────────────────────
-  const dbPath = resolve(cwd, config.storage.dbPath)
-  const dbOk = existsSync(dbPath)
-  checkLine('checking DB', dbOk, `${config.storage.dbPath} reachable`)
+  let dbOk: boolean
+  if (config.database.type === 'sqlite') {
+    const dbPath = resolve(cwd, config.database.path)
+    dbOk = existsSync(dbPath)
+    checkLine('checking DB', dbOk, `${config.database.path} reachable`)
+  } else {
+    // For remote DBs we can't check the file — assume reachable (openDB will fail fast if not)
+    dbOk = true
+    checkLine('checking DB', true, `${config.database.type}://${config.database.connectionString.replace(/:[^:@]*@/, ':***@')} configured`)
+  }
   if (!dbOk) allOk = false
 
   // ─── [checking agents] ──────────────────────────────────────────────────────
