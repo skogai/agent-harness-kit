@@ -4,23 +4,32 @@ import pc from 'picocolors'
 import { loadConfig } from '@/core/config'
 import { openDB } from '@/core/db'
 import { slugify } from '@/core/materializer/scaffold-utils'
+import { taskDescriptionSchema, taskTitleSchema } from '@/schema/task'
+import { cliFormWithRetry } from '@/utils/form'
 
 export async function runTaskAdd(cwd: string): Promise<void> {
   p.intro(pc.bold('agent-harness-kit — add task'))
 
-  const titleVal = await p.text({
-    message: 'Task title',
-    validate: (v) => (v.trim() ? undefined : 'Title is required'),
-  })
-  if (p.isCancel(titleVal)) { p.cancel('Cancelled.'); process.exit(0) }
-  const title = (titleVal as string).trim()
+  const title = await cliFormWithRetry(
+    async () => {
+      const val = await p.text({ message: 'Task title' })
+      if (p.isCancel(val)) { p.cancel('Cancelled.'); process.exit(0) }
+      return (val as string).trim()
+    },
+    taskTitleSchema,
+  )
 
-  const descVal = await p.text({
-    message: 'Description (what and why)',
-    placeholder: 'Optional',
-  })
-  if (p.isCancel(descVal)) { p.cancel('Cancelled.'); process.exit(0) }
-  const description = (descVal as string).trim()
+  const description = await cliFormWithRetry(
+    async () => {
+      const val = await p.text({
+        message: 'Description (what and why)',
+        placeholder: 'Describe the task in more detail, including any relevant context or instructions for the agents.',
+      })
+      if (p.isCancel(val)) { p.cancel('Cancelled.'); process.exit(0) }
+      return (val as string).trim()
+    },
+    taskDescriptionSchema,
+  )
 
   const acceptance: string[] = []
   p.log.info('Acceptance criteria — one per line, empty line to finish')
