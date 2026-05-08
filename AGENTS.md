@@ -4,7 +4,7 @@
 
 ## Project
 
-**@cardor/agent-harness-kit** — A CLI tool for agent harness scaffolding
+**@cardor/agent-harness-kit** — A CLI Tool to setup agent harness
 
 ## Health check (run before starting)
 
@@ -33,6 +33,7 @@ actions.record_tool  actionId toolName [argsJson] [summary] → log a tool call 
 actions.record_file  actionId filePath operation [notes]   → log a file touch to the Files dashboard
 actions.complete     actionId summary                       → close the action
 actions.get          taskId                                 → full action history for a task
+tasks.add            title [slug] [description] [acceptance] → create a new task from natural language
 tasks.get            [status]                               → list tasks (pending | in_progress | done | blocked)
 tasks.claim          id                                     → atomically claim a pending task
 tasks.update         id status                              → change task status
