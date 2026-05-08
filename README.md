@@ -475,8 +475,38 @@ npm run build:ui    # build the dashboard SPA (dashboard/ → src/dashboard-dist
 npm run build       # build:ui + tsc + copy-assets
 npm run dev         # watch mode (CLI TypeScript only)
 npm test            # run tests
-npm link            # register ahk globally from local source
 ```
+
+### Testing the local build in another project
+
+Use the helper script to build the package and link it into any local project in one step:
+
+```bash
+# Build + link into a specific project
+./scripts/link-local.sh /path/to/your-other-project
+
+# Build + register globally only (then link manually wherever you need)
+./scripts/link-local.sh
+```
+
+What the script does:
+
+1. Runs `npm run build` (full build including dashboard assets)
+2. Runs `npm link` to register the package globally on your machine
+3. Runs `npm link @cardor/agent-harness-kit` inside the target project
+4. Smoke-tests the `ahk` binary with `--version`
+
+After linking, `npx ahk` inside the target project will use your local build. To unlink when you're done:
+
+```bash
+# Inside the target project
+npm unlink @cardor/agent-harness-kit
+
+# Optionally remove the global registration
+npm uninstall -g @cardor/agent-harness-kit
+```
+
+> **Tip:** If you're iterating quickly, run `npm run build` in this repo after each change — the link picks up the new `dist/` immediately without re-running the script.
 
 To work on the dashboard UI with hot reload:
 
