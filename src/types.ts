@@ -41,6 +41,20 @@ export interface ActionSections {
   nextSteps: boolean
 }
 
+export interface DatabaseConfig {
+  type: 'sqlite' | 'postgres' | 'mysql'
+  /** SQLite only — path to the .db file */
+  dbPath?: string
+  /** Postgres / MySQL — full connection URL (postgres://... or mysql://...) */
+  connectionString?: string
+  /** Postgres / MySQL — individual connection fields (alternative to connectionString) */
+  host?: string
+  port?: number
+  user?: string
+  password?: string
+  database?: string
+}
+
 export interface StorageConfig {
   dir: string
   dbPath: string
@@ -64,6 +78,7 @@ export interface HarnessConfig {
   provider: Provider
   agents: AgentsConfig
   storage: StorageConfig
+  database?: DatabaseConfig
   health: HealthConfig
   tools: ToolsConfig
 }
