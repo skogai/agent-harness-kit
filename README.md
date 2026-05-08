@@ -71,7 +71,7 @@ Everything is stored locally in a SQLite database (`.harness/harness.db`). No cl
 
 ## Requirements
 
-- Node.js ≥ 22 **or** Bun (any recent version)
+- Node.js ≥ 22.5 **or** Bun (any recent version)
 - npm ≥ 9
 
 ---
