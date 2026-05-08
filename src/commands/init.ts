@@ -8,6 +8,9 @@ import { openDB } from '@/core/db'
 import { getMaterializer } from '@/core/materializer/index'
 import { slugify } from '@/core/materializer/scaffold-utils'
 import { configTs } from '@/core/materializer/templates'
+import { initDescriptionSchema, initDocsSchema, initNameSchema } from '@/schema/init'
+import { taskDescriptionSchema, taskTitleSchema } from '@/schema/task'
+import { cliFormWithRetry } from '@/utils/form'
 
 import { applyConfigDefaults, printWelcomeMessage, readProjectNameFromPackageJson } from './init-helpers'
 
@@ -30,23 +33,32 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
   if (flags.name) {
     name = flags.name
   } else {
-    const val = await p.text({
-      message: 'Project name',
-      placeholder: 'my-app',
-      ...(detectedName && { initialValue: detectedName }),
-      validate: (v) => (v.trim() ? undefined : 'Project name is required'),
-    })
-    if (p.isCancel(val)) { p.cancel('Cancelled.'); process.exit(0) }
-    name = val as string
+    name = await cliFormWithRetry(
+      async () => {
+        const val = await p.text({
+          message: 'Project name',
+          placeholder: 'my-app',
+          ...(detectedName && { initialValue: detectedName }),
+        })
+        if (p.isCancel(val)) { p.cancel('Cancelled.'); process.exit(0) }
+        return val as string
+      },
+      initNameSchema,
+    )
   }
 
   // ─── Description ─────────────────────────────────────────────────────────
-  const descVal = await p.text({
-    message: 'Short description (shown to agents as context)',
-    placeholder: 'A REST API for managing notes',
-  })
-  if (p.isCancel(descVal)) { p.cancel('Cancelled.'); process.exit(0) }
-  const description = (descVal as string).trim() || name
+  const description = await cliFormWithRetry(
+    async () => {
+      const val = await p.text({
+        message: 'Short description (shown to agents as context)',
+        placeholder: 'A REST API for managing notes',
+      })
+      if (p.isCancel(val)) { p.cancel('Cancelled.'); process.exit(0) }
+      return val as string
+    },
+    initDescriptionSchema,
+  )
 
   // ─── Provider ─────────────────────────────────────────────────────────────
   let provider: Provider
@@ -80,12 +92,17 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
   if (flags.docs) {
     docsPath = flags.docs
   } else {
-    const val = await p.text({
-      message: 'Docs folder path (agents will search here)',
-      initialValue: './docs',
-    })
-    if (p.isCancel(val)) { p.cancel('Cancelled.'); process.exit(0) }
-    docsPath = (val as string).trim() || './docs'
+    docsPath = await cliFormWithRetry(
+      async () => {
+        const val = await p.text({
+          message: 'Docs folder path (agents will search here)',
+          initialValue: './docs',
+        })
+        if (p.isCancel(val)) { p.cancel('Cancelled.'); process.exit(0) }
+        return val as string
+      },
+      initDocsSchema,
+    )
   }
 
   // ─── Task adapter ─────────────────────────────────────────────────────────
@@ -112,19 +129,23 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
   let firstTask: { title: string; description: string; acceptance: string[] } | undefined
 
   if (addFirstTask) {
-    const titleVal = await p.text({
-      message: 'Task title',
-      validate: (v) => (v.trim() ? undefined : 'Title is required'),
-    })
-    if (p.isCancel(titleVal)) { p.cancel('Cancelled'); process.exit(0) }
-    const taskTitle = (titleVal as string).trim()
+    const taskTitle = await cliFormWithRetry(
+      async () => {
+        const val = await p.text({ message: 'Task title' })
+        if (p.isCancel(val)) { p.cancel('Cancelled'); process.exit(0) }
+        return (val as string).trim()
+      },
+      taskTitleSchema,
+    )
 
-    const taskDescVal = await p.text({
-      message: 'Task description',
-      placeholder: 'What and why',
-    })
-    if (p.isCancel(taskDescVal)) { p.cancel('Cancelled'); process.exit(0) }
-    const taskDesc = (taskDescVal as string).trim()
+    const taskDesc = await cliFormWithRetry(
+      async () => {
+        const val = await p.text({ message: 'Task description', placeholder: 'What and why' })
+        if (p.isCancel(val)) { p.cancel('Cancelled'); process.exit(0) }
+        return (val as string).trim()
+      },
+      taskDescriptionSchema,
+    )
 
     const acceptance: string[] = []
     p.log.info('Acceptance criteria — one per line, empty line to finish')
@@ -194,7 +215,6 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
     spinner.stop('Failed')
     p.log.error(err instanceof Error ? err.message : String(err))
     throw err
-    process.exit(1)
   }
 
   const agentHarnessKitDir = globalInstallation ? 'home directory' : 'current directory'
