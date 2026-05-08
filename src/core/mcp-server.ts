@@ -8,6 +8,7 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
 
+import { slugify } from './materializer/scaffold-utils'
 import { type HarnessDB, openDB } from './db'
 
 import type { ActionFileRow, AgentName, HarnessConfig, TaskStatus } from '@/types'
@@ -156,6 +157,25 @@ const TOOLS = [
     },
   },
   {
+    name: 'tasks.add',
+    description:
+      'Create a new task in the harness. Use this when the user describes work in natural language. Infer slug, title, description, and acceptance criteria from the conversation. Ask for missing critical info before calling.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', description: 'Short human-readable title for the task' },
+        slug: { type: 'string', description: 'URL-safe identifier (lowercase, hyphens). Auto-derived from title if omitted.' },
+        description: { type: 'string', description: 'Longer description of the task goal' },
+        acceptance: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'List of acceptance criteria (plain sentences)',
+        },
+      },
+      required: ['title'],
+    },
+  },
+  {
     name: 'actions.record_tool',
     description:
       'Record a tool call made during an action. This is the only way to populate the Tools dashboard. Call once per tool invocation.',
@@ -259,6 +279,15 @@ async function dispatch(
       if (!task) {
         return ok(JSON.stringify({ error: 'task_already_claimed', taskId: id }))
       }
+      return ok(JSON.stringify(task))
+    }
+
+    case 'tasks.add': {
+      const title = str(args, 'title')
+      const slug = (args['slug'] as string | undefined) ?? slugify(title)
+      const description = args['description'] as string | undefined
+      const acceptance = args['acceptance'] as string[] | undefined
+      const task = await db.addTask({ slug, title, description, acceptance })
       return ok(JSON.stringify(task))
     }
 
