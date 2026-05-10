@@ -8,8 +8,8 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
 
-import { slugify } from './materializer/scaffold-utils'
 import { type HarnessDB, openDB } from './db'
+import { slugify } from './materializer/scaffold-utils'
 
 import type { ActionFileRow, AgentName, HarnessConfig, TaskStatus } from '@/types'
 

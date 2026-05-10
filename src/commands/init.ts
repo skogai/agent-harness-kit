@@ -239,4 +239,5 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
   console.log('')
   console.log(pc.cyan('→') + ` Edit ${pc.cyan('health.sh')} with your project checks`)
   console.log(pc.cyan('→') + ` ${pc.cyan('ahk task add')} to queue work for agents`)
+  console.log(pc.cyan('→') + ` Enrich your docs with knowledge graphs: ${pc.cyan('https://github.com/safishamsi/graphify')}`)
 }

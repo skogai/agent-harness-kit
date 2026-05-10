@@ -12,6 +12,38 @@ npx ahk init
 
 ---
 
+## Table of Contents
+
+- [Why this exists](#why-this-exists)
+- [How it works](#how-it-works)
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Commands](#commands)
+  - [ahk init](#ahk-init)
+  - [ahk build](#ahk-build)
+  - [ahk dashboard](#ahk-dashboard)
+  - [ahk status](#ahk-status)
+  - [ahk health](#ahk-health)
+  - [ahk sync](#ahk-sync)
+  - [ahk serve](#ahk-serve)
+  - [ahk task add](#ahk-task-add)
+  - [ahk task list](#ahk-task-list)
+  - [ahk task done](#ahk-task-done-idslug)
+  - [ahk reset](#ahk-reset)
+  - [ahk migrate](#ahk-migrate)
+  - [ahk export](#ahk-export)
+- [Files created by ahk init](#files-created-by-ahk-init)
+- [What you can customize](#what-you-can-customize)
+- [MCP tools (for agents)](#mcp-tools-for-agents)
+- [Agent roles](#agent-roles)
+- [What to commit](#what-to-commit)
+- [Runtime compatibility](#runtime-compatibility)
+- [Contributing & local development](#contributing--local-development)
+- [Roadmap](#roadmap)
+
+---
+
 ## Why this exists
 
 If you don't know what is Agent Harness, you can check this blog post: [Introducing Agent Harness](https://aakashgupta.medium.com/2025-was-agents-2026-is-agent-harnesses-heres-why-that-changes-everything-073e9877655e).

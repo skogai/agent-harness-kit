@@ -3,7 +3,7 @@ import { mkdirSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 
-import { openDB, type HarnessDB } from '@/core/db'
+import { type HarnessDB,openDB } from '@/core/db'
 
 import type { HarnessConfig } from '@/types'
 
