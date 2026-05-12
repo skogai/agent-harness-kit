@@ -16,7 +16,7 @@
   },
   "scripts": {
     "build": "pnpm run build:ui && tsup && pnpm run copy-assets",
-    "build:ui": "cd dashboard && pnpm install --prefer-offline && pnpm run build",
+    "build:ui": "pnpm --filter ahk-dashboard install && pnpm --filter ahk-dashboard run build",
     "copy-assets": "node scripts/copy-assets.mjs",
     "dev": "tsup --watch",
     "test": "node --test --import tsx/esm src/tests/*.test.ts",
