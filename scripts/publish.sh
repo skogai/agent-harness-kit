@@ -42,8 +42,14 @@ fi
 
 # -- 1. Read package metadata -------------------------------------------------
 info "Reading package metadata..."
-PACKAGE_NAME=$(node -p "require('./package.json').name")
-VERSION=$(node -p "require('./package.json').version")
+# Use jq if available; otherwise fall back to grep+sed (avoids ESM require() issues)
+if command -v jq &>/dev/null; then
+  PACKAGE_NAME=$(jq -r '.name'    package.json)
+  VERSION=$(jq      -r '.version' package.json)
+else
+  PACKAGE_NAME=$(grep '"name"'    package.json | head -1 | sed 's/.*"name": "\(.*\)".*/\1/')
+  VERSION=$(grep      '"version"' package.json | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
+fi
 TAG="v${VERSION}"
 
 echo "  Package : $PACKAGE_NAME"
@@ -110,13 +116,14 @@ fi
 
 # -- 9. Build release notes from recent commits -------------------------------
 info "Building release notes..."
-PREV_TAG=$(git tag --sort=-version:refname | grep -v "^${TAG}$" | head -1 || true)
+# awk avoids the grep|head SIGPIPE that breaks pipefail
+PREV_TAG=$(git tag --sort=-version:refname | awk "/^${TAG}$/{next} {print; exit}")
 
 if [[ -n "$PREV_TAG" ]]; then
   RELEASE_NOTES=$(git log "${PREV_TAG}..HEAD" --pretty=format:"- %s" --no-merges)
   RANGE_LABEL="Changes since $PREV_TAG"
 else
-  RELEASE_NOTES=$(git log --pretty=format:"- %s" --no-merges | head -20)
+  RELEASE_NOTES=$(git log --pretty=format:"- %s" --no-merges | awk 'NR<=20')
   RANGE_LABEL="Initial release commits"
 fi
 
