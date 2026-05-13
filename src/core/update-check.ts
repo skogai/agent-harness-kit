@@ -2,6 +2,7 @@
 import pc from 'picocolors'
 
 import { pkg } from './package-data'
+import { drawBox } from '@/commands/init-helpers'
 
 const REGISTRY_URL = `https://registry.npmjs.org/${pkg.name}/latest`
 const TIMEOUT_MS = 2500
@@ -32,19 +33,10 @@ export function checkForUpdate(currentVersion: string): Promise<UpdateInfo | nul
 export function printUpdateMessage({ current, latest }: UpdateInfo): void {
   const lines = [
     `  Update available ${pc.dim(current)} → ${pc.green(latest)}  `,
-    `  Run: ${pc.cyan(`npm i ${pkg.name}@${latest}`)}          `,
+    `  Run: ${pc.cyan(`pnpm i ${pkg.name}@${latest}`)}          `,
   ]
-  const width = Math.max(...lines.map((l) => stripAnsi(l).length))
-  const border = '─'.repeat(width)
 
-  console.log()
-  console.log(pc.yellow(`┌${border}┐`))
-  for (const line of lines) {
-    const pad = width - stripAnsi(line).length
-    console.log(pc.yellow('│') + line + ' '.repeat(pad) + pc.yellow('│'))
-  }
-  console.log(pc.yellow(`└${border}┘`))
-  console.log()
+  drawBox(lines)
 }
 
 function isNewer(latest: string, current: string): boolean {
@@ -56,8 +48,4 @@ function isNewer(latest: string, current: string): boolean {
   if (lMin !== cMin) return lMin > cMin
 
   return lPat > cPat
-}
-
-function stripAnsi(str: string): string {
-  return str.replace(/\x1B\[[0-9;]*m/g, '')
 }

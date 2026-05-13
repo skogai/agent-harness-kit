@@ -12,7 +12,7 @@ import { initDescriptionSchema, initDocsSchema, initNameSchema } from '@/schema/
 import { taskDescriptionSchema, taskTitleSchema } from '@/schema/task'
 import { cliFormWithRetry } from '@/utils/form'
 
-import { applyConfigDefaults, printWelcomeMessage, readProjectNameFromPackageJson } from './init-helpers'
+import { applyConfigDefaults, drawBox, printWelcomeMessage, readProjectNameFromPackageJson } from './init-helpers'
 
 import type { Provider } from '@/types'
 
@@ -240,4 +240,12 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
   console.log(pc.cyan('→') + ` Edit ${pc.cyan('health.sh')} with your project checks`)
   console.log(pc.cyan('→') + ` ${pc.cyan('ahk task add')} to queue work for agents`)
   console.log(pc.cyan('→') + ` Enrich your docs with knowledge graphs: ${pc.cyan('https://github.com/safishamsi/graphify')}`)
+
+  const recommendations: string[] = [
+    `   Give a try to Heimdall MCP: Transparent proxy that traces every MCP tool call with OpenTelemetry.  `,
+    `   Learn more: ${pc.cyan('https://github.com/enmanuelmag/heimdall-mcp')}                              `,
+  ]
+
+  console.log('')
+  drawBox(recommendations)
 }
