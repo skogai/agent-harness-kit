@@ -1,0 +1,12 @@
+node_modules
+dist
+build
+coverage
+**/*.min.js
+dashboard/dist
+dashboard/@/src/dashboard-dist
+.git
+.harness
+pnpm-lock.yaml
+*.generated.ts
+routeTree.gen.ts
