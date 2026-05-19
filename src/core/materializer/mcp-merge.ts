@@ -1,13 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 
-const compactionConfig = {
-  compaction: {
-    auto: true,
-    prune: true,
-    reserved: 10000
-  }
-}
+// ─── Claude Code ──────────────────────────────────────────────────────────────
 
 export function mergeClaudeMcpJson(filePath: string, port: number): void {
   const folderPath = dirname(filePath)
@@ -24,27 +18,45 @@ export function mergeClaudeMcpJson(filePath: string, port: number): void {
     }
   }
 
-
-
-  const agentHarnessKitConfig = {
-    type: 'stdio',
-    command: 'npx',
-    args: ['ahk', 'serve', '--port', String(port)],
-  }
-
   const merged = {
     ...existing,
-    compaction: existing.compaction ?? compactionConfig.compaction,
-    default_agent: "lead",
     mcpServers: {
       ...((existing.mcpServers as Record<string, unknown>) ?? {}),
-      'agent-harness-kit': agentHarnessKitConfig,
+      'agent-harness-kit': {
+        type: 'stdio',
+        command: 'npx',
+        args: ['ahk', 'serve', '--port', String(port)],
+      },
     },
   }
 
   mkdirSync(dirname(filePath), { recursive: true })
   writeFileSync(filePath, JSON.stringify(merged, null, 2) + '\n', 'utf8')
 }
+
+// Write `agent: "lead"` to .claude/settings.json — the correct Claude Code field
+// for setting which subagent runs as the main session thread.
+export function mergeClaudeSettingsJson(filePath: string): void {
+  mkdirSync(dirname(filePath), { recursive: true })
+
+  let existing: Record<string, unknown> = {}
+  if (existsSync(filePath)) {
+    try {
+      existing = JSON.parse(readFileSync(filePath, 'utf8')) as Record<string, unknown>
+    } catch {
+      // start fresh
+    }
+  }
+
+  const merged = {
+    ...existing,
+    agent: 'lead',
+  }
+
+  writeFileSync(filePath, JSON.stringify(merged, null, 2) + '\n', 'utf8')
+}
+
+// ─── OpenCode ─────────────────────────────────────────────────────────────────
 
 export function mergeOpencodeJson(filePath: string, port: number): void {
   const folderPath = dirname(filePath)
@@ -63,21 +75,72 @@ export function mergeOpencodeJson(filePath: string, port: number): void {
 
   const existingMcp = (existing.mcp as Record<string, unknown>) ?? {}
 
-  const agentHarnessKitConfig = {
-    enabled: true,
-    type: 'local',
-    command: ['npx', 'ahk', 'serve', '--port', String(port)],
-  }
-
   const merged = {
     ...existing,
-    compaction: existing.compaction ?? compactionConfig.compaction,
-    default_agent: "lead",
+    default_agent: 'lead',
+    compaction: existing.compaction ?? { auto: true, prune: true, reserved: 10000 },
+    permission: existing.permission ?? { write: 'ask' },
     mcp: {
       ...existingMcp,
-      'agent-harness-kit': agentHarnessKitConfig,
+      'agent-harness-kit': {
+        enabled: true,
+        type: 'local',
+        command: ['npx', 'ahk', 'serve', '--port', String(port)],
+      },
     },
   }
 
   writeFileSync(filePath, JSON.stringify(merged, null, 2) + '\n', 'utf8')
+}
+
+// ─── Codex CLI ────────────────────────────────────────────────────────────────
+
+function mergeTomlSection(content: string, sectionName: string, sectionBody: string): string {
+  const lines = content.split('\n')
+  const header = `[${sectionName}]`
+
+  const startIdx = lines.findIndex(l => l.trim() === header)
+
+  if (startIdx === -1) {
+    const trimmed = content.trimEnd()
+    return trimmed + (trimmed ? '\n\n' : '') + header + '\n' + sectionBody.trimEnd() + '\n'
+  }
+
+  // Find where the section ends: next line starting with `[` or EOF
+  let endIdx = lines.length
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    if (/^\[/.test(lines[i])) {
+      endIdx = i
+      break
+    }
+  }
+
+  const newLines = [
+    ...lines.slice(0, startIdx),
+    header,
+    ...sectionBody.trimEnd().split('\n'),
+    '',
+    ...lines.slice(endIdx),
+  ]
+
+  return newLines.join('\n')
+}
+
+export function mergeCodexConfigToml(filePath: string, port: number): void {
+  mkdirSync(dirname(filePath), { recursive: true })
+
+  let content = ''
+  if (existsSync(filePath)) {
+    content = readFileSync(filePath, 'utf8')
+  }
+
+  const sectionBody = [
+    'command = "npx"',
+    `args = ["ahk", "serve", "--port", "${port}"]`,
+    'default_tools_approval_mode = "auto"',
+  ].join('\n')
+
+  content = mergeTomlSection(content, 'mcp_servers.agent-harness-kit', sectionBody)
+
+  writeFileSync(filePath, content, 'utf8')
 }

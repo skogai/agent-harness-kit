@@ -305,6 +305,78 @@ export function featureListJson(
   return JSON.stringify(tasks, null, 2) + '\n'
 }
 
+// ─── Codex CLI agent TOML helpers ────────────────────────────────────────────
+
+function stripFrontmatter(md: string): { description: string; body: string } {
+  const parts = md.split(/^---\s*$/m)
+  if (parts.length < 3) return { description: '', body: md }
+
+  const frontmatter = parts[1]
+  const body = parts.slice(2).join('---').replace(/^\n/, '')
+
+  let description = ''
+  // YAML folded scalar: `description: >\n  line1\n  line2`
+  const foldedMatch = frontmatter.match(/^description:\s*[>|]\s*\n((?:[ \t]+[^\n]*\n?)*)/m)
+  if (foldedMatch) {
+    description = foldedMatch[1]
+      .split('\n')
+      .map(l => l.trim())
+      .filter(Boolean)
+      .join(' ')
+  } else {
+    const inlineMatch = frontmatter.match(/^description:\s*(.+)$/m)
+    if (inlineMatch) description = inlineMatch[1].trim()
+  }
+
+  return { description, body }
+}
+
+function toCodexToml(
+  name: string,
+  description: string,
+  body: string,
+  sandboxMode: 'workspace-write' | 'read-only'
+): string {
+  // TOML multiline basic strings end at `"""` — escape any that appear in content
+  const safe = (s: string) => s.replace(/"""/g, '""\\u0022')
+  return `name = "${name}"
+sandbox_mode = "${sandboxMode}"
+
+description = """
+${safe(description)}
+"""
+
+developer_instructions = """
+${safe(body.trimEnd())}
+"""
+`
+}
+
+export function agentLeadToml(vars: { projectName: string }): string {
+  const { description, body } = stripFrontmatter(loadAgentTemplate('lead', vars))
+  return toCodexToml('lead', description, body, 'read-only')
+}
+
+export function agentLeadAsDefaultToml(vars: { projectName: string }): string {
+  const { description, body } = stripFrontmatter(loadAgentTemplate('lead', vars))
+  return toCodexToml('default', description, body, 'read-only')
+}
+
+export function agentExplorerToml(vars: { projectName: string; allowedPaths: string }): string {
+  const { description, body } = stripFrontmatter(loadAgentTemplate('explorer', vars))
+  return toCodexToml('explorer', description, body, 'read-only')
+}
+
+export function agentBuilderToml(vars: { projectName: string; writablePaths: string }): string {
+  const { description, body } = stripFrontmatter(loadAgentTemplate('builder', vars))
+  return toCodexToml('builder', description, body, 'workspace-write')
+}
+
+export function agentReviewerToml(vars: { projectName: string }): string {
+  const { description, body } = stripFrontmatter(loadAgentTemplate('reviewer', vars))
+  return toCodexToml('reviewer', description, body, 'read-only')
+}
+
 // ─── .gitignore additions ─────────────────────────────────────────────────────
 
 export const GITIGNORE_ENTRIES = `
