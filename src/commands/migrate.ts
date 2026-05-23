@@ -14,7 +14,7 @@ export async function runMigrate(cwd: string, opts: MigrateOptions): Promise<voi
   const config = await loadConfig(cwd)
 
   let target: Provider
-  if (opts.to && ['claude-code', 'opencode'].includes(opts.to)) {
+  if (opts.to && ['claude-code', 'opencode', 'codex-cli'].includes(opts.to)) {
     target = opts.to as Provider
   } else {
     const val = await p.select({
@@ -22,9 +22,13 @@ export async function runMigrate(cwd: string, opts: MigrateOptions): Promise<voi
       options: [
         { value: 'claude-code', label: 'Claude Code' },
         { value: 'opencode', label: 'OpenCode' },
+        { value: 'codex-cli', label: 'Codex CLI' },
       ],
     })
-    if (p.isCancel(val)) { p.cancel('Cancelled.'); process.exit(0) }
+    if (p.isCancel(val)) {
+      p.cancel('Cancelled.')
+      process.exit(0)
+    }
     target = val as Provider
   }
 
