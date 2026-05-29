@@ -31,7 +31,8 @@ export async function runStatus(cwd: string, opts: StatusOptions): Promise<void>
           acceptance: await db.getTaskAcceptance(t.id),
         })),
       )
-      console.log(JSON.stringify({ tasks: actions, summary }, null, 2))
+      const archivedCount = (await db.getArchivedTasks()).length
+      console.log(JSON.stringify({ tasks: actions, summary, archivedCount }, null, 2))
       return
     }
 
@@ -80,6 +81,11 @@ export async function runStatus(cwd: string, opts: StatusOptions): Promise<void>
       return `${fn(s.status)}: ${s.total}`
     })
     console.log(pc.dim('Tasks — ') + parts.join(pc.dim(' | ')))
+
+    const archivedTasks = await db.getArchivedTasks()
+    if (archivedTasks.length > 0) {
+      console.log(pc.dim(`${archivedTasks.length} archived (use \`ahk task list --archived\` to view)`))
+    }
   } finally {
     await db.close()
   }

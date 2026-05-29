@@ -9,6 +9,8 @@ import type { TaskStatus } from '@/types'
 interface TaskListOptions {
   status?: string
   json?: boolean
+  archived?: boolean
+  includeArchived?: boolean
 }
 
 const STATUS_COLOR: Record<string, (s: string) => string> = {
@@ -29,7 +31,11 @@ export async function runTaskList(cwd: string, opts: TaskListOptions): Promise<v
         ? (opts.status as TaskStatus)
         : undefined
 
-    const tasks = filterStatus ? await db.getTasks(filterStatus) : await db.getTasks()
+    const tasks = opts.archived
+      ? await db.getArchivedTasks()
+      : filterStatus
+        ? await db.getTasks(filterStatus, opts.includeArchived ?? false)
+        : await db.getTasks(undefined, opts.includeArchived ?? false)
 
     if (opts.json) {
       console.log(JSON.stringify(tasks, null, 2))
@@ -37,7 +43,10 @@ export async function runTaskList(cwd: string, opts: TaskListOptions): Promise<v
     }
 
     if (tasks.length === 0) {
-      console.log(pc.dim('No tasks' + (filterStatus ? ` with status: ${filterStatus}` : '') + '.'))
+      let msg = 'No tasks'
+      if (filterStatus) msg += ` with status: ${filterStatus}`
+      if (opts.archived) msg += ' (archived)'
+      console.log(pc.dim(msg + '.'))
       return
     }
 
@@ -52,6 +61,13 @@ export async function runTaskList(cwd: string, opts: TaskListOptions): Promise<v
     }
 
     console.log(table.toString())
+
+    if (!opts.archived && !opts.includeArchived) {
+      const archivedTasks = await db.getArchivedTasks()
+      if (archivedTasks.length > 0) {
+        console.log(pc.dim(`${archivedTasks.length} archived task${archivedTasks.length !== 1 ? 's' : ''} (use --archived to view)`))
+      }
+    }
   } finally {
     await db.close()
   }
