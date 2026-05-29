@@ -2,6 +2,9 @@
   "name": "@cardor/agent-harness-kit",
   "version": "1.2.4",
   "description": "CLI scaffolding for multi-agent harness systems",
+  "publishConfig": {
+    "access": "public"
+  },
   "packageManager": "pnpm@11.1.2",
   "type": "module",
   "main": "./dist/index.js",
