@@ -15,7 +15,7 @@ export const Route = createFileRoute('/tasks/')({
   component: Tasks,
 });
 
-type Filter = 'all' | 'pending' | 'in_progress' | 'done' | 'blocked';
+type Filter = 'all' | 'pending' | 'in_progress' | 'done' | 'blocked' | 'archived';
 
 const FILTERS: { value: Filter; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -23,17 +23,20 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: 'in_progress', label: 'In Progress' },
   { value: 'done', label: 'Done' },
   { value: 'blocked', label: 'Blocked' },
+  { value: 'archived', label: 'Archived' },
 ];
 
 function Tasks() {
   const [filter, setFilter] = useState<Filter>('all');
   const { data: tasks = [], isLoading } = useQuery({
-    queryKey: qk.tasks,
-    queryFn: api.tasks,
+    queryKey: qk.allTasks(true),
+    queryFn: () => api.allTasks(true),
   });
 
   const filtered =
-    filter === 'all' ? tasks : tasks.filter((t) => t.status === filter);
+    filter === 'all' ? tasks.filter(t => !t.archived_at) :
+    filter === 'archived' ? tasks.filter(t => t.archived_at) :
+    tasks.filter((t) => t.status === filter && !t.archived_at);
 
   return (
     <div>
@@ -71,6 +74,7 @@ function Tasks() {
                 'Assigned',
                 'Acceptance',
                 'Created',
+                'Archived',
               ].map((h) => (
                 <th
                   key={h}
@@ -82,11 +86,11 @@ function Tasks() {
             </tr>
           </thead>
           <tbody>
-            {isLoading && <LoadingTableRow cols={7} />}
+            {isLoading && <LoadingTableRow cols={8} />}
             {filtered.map((t) => (
               <TaskRow key={t.id} task={t} />
             ))}
-            {!isLoading && filtered.length === 0 && <EmptyTableRow cols={7} message="No tasks" />}
+            {!isLoading && filtered.length === 0 && <EmptyTableRow cols={8} message="No tasks" />}
           </tbody>
         </table>
       </div>
@@ -148,6 +152,15 @@ function TaskRow({ task }: { task: TaskSummary }) {
       </td>
       <td className="px-4 py-3 font-mono text-xs text-neutral-600">
         {formatDate(task.created_at)}
+      </td>
+      <td className="px-4 py-3">
+        {task.archived_at ? (
+          <span className="text-[10px] font-mono text-yellow-600/80 bg-yellow-500/5 px-2 py-0.5 rounded">
+            archived
+          </span>
+        ) : (
+          <span className="text-neutral-800 text-xs">—</span>
+        )}
       </td>
     </tr>
   );

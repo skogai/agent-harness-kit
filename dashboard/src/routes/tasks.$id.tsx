@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 
@@ -32,7 +33,34 @@ function TaskDetailPage() {
   if (isLoading) return <LoadingState />;
   if (isError || !task) return <ErrorState message="Task not found" backTo="/tasks" backLabel="← Back to tasks" />;
 
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(task.title);
+  const [editDescription, setEditDescription] = useState(task.description ?? '');
+  const [editAcceptance, setEditAcceptance] = useState(task.acceptance.map(a => a.criterion));
+
+  const addAcField = () => setEditAcceptance([...editAcceptance, '']);
+
+  const handleSave = async () => {
+    await api.updateTask(Number(id), {
+      title: editTitle,
+      description: editDescription || null,
+      acceptance: editAcceptance.filter(a => a.trim() !== ''),
+    });
+    setEditing(false);
+    window.location.reload();
+  };
+
   const doneCount = task.acceptance.filter((a) => a.met).length;
+
+  const handleArchive = async () => {
+    await api.archiveTask(Number(id));
+    window.location.reload();
+  };
+
+  const handleUnarchive = async () => {
+    await api.unarchiveTask(Number(id));
+    window.location.reload();
+  };
 
   return (
     <div>
@@ -43,9 +71,76 @@ function TaskDetailPage() {
           <div className="flex items-center gap-2">
             <StatusBadge status={task.status} />
             {task.assigned_to && <AgentBadge agent={task.assigned_to} />}
+            {task.archived_at ? (
+              <button
+                onClick={handleUnarchive}
+                className="text-xs font-mono text-yellow-500 hover:text-yellow-400 border border-yellow-900/50 px-3 py-1 rounded"
+              >
+                Unarchive
+              </button>
+            ) : (
+              <button
+                onClick={handleArchive}
+                className="text-xs font-mono text-neutral-500 hover:text-red-400 border border-[#1f1f1f] px-3 py-1 rounded"
+              >
+                Archive
+              </button>
+            )}
           </div>
         }
       />
+
+      {/* Edit button */}
+      <div className="px-6">
+        <button
+          onClick={() => setEditing(true)}
+          className="text-xs font-mono text-neutral-500 hover:text-[#fafafa] border border-[#1f1f1f] px-3 py-1.5 rounded transition-colors"
+        >
+          Edit
+        </button>
+      </div>
+
+      {/* Edit modal */}
+      {editing && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center" onClick={() => setEditing(false)}>
+          <div className="bg-[#0a0a0a] border border-[#1f1f1f] rounded-lg p-6 w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-mono text-sm text-[#fafafa] mb-4">Edit Task</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-neutral-500 font-mono block mb-1">Title</label>
+                <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full bg-black border border-[#1f1f1f] rounded px-3 py-2 text-sm text-[#fafafa] font-mono outline-none focus:border-neutral-600" />
+              </div>
+              <div>
+                <label className="text-xs text-neutral-500 font-mono block mb-1">Description</label>
+                <textarea value={editDescription ?? ''} onChange={(e) => setEditDescription(e.target.value)} className="w-full bg-black border border-[#1f1f1f] rounded px-3 py-2 text-sm text-[#fafafa] font-mono outline-none focus:border-neutral-600 resize-none h-20" />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-neutral-500 font-mono">Acceptance Criteria</span>
+                  <button onClick={addAcField} className="text-xs font-mono text-green-500 hover:text-green-400">+ Add</button>
+                </div>
+                <div className="space-y-2">
+                  {editAcceptance.map((ac, i) => (
+                    <div key={i} className="flex gap-2">
+                      <span className="text-xs text-neutral-600 font-mono mt-2 shrink-0">#{i + 1}</span>
+                      <input value={ac} onChange={(e) => {
+                        const next = [...editAcceptance]
+                        next[i] = e.target.value
+                        setEditAcceptance(next)
+                      }} className="flex-1 bg-black border border-[#1f1f1f] rounded px-3 py-2 text-sm text-[#fafafa] font-mono outline-none focus:border-neutral-600" />
+                      <button onClick={() => setEditAcceptance(editAcceptance.filter((_, j) => j !== i))} className="text-xs text-red-500 hover:text-red-400 mt-2">✕</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <button onClick={() => setEditing(false)} className="text-xs font-mono text-neutral-500 hover:text-neutral-300 px-3 py-1.5">Cancel</button>
+              <button onClick={handleSave} className="text-xs font-mono bg-[#fafafa] text-black px-3 py-1.5 rounded hover:bg-white">Save</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="p-6 space-y-6">
         {/* Timestamps */}
@@ -67,6 +162,15 @@ function TaskDetailPage() {
               <TimestampItem
                 label="Duration"
                 value={formatDuration(task.started_at, task.completed_at)}
+              />
+            </>
+          )}
+          {task.archived_at && (
+            <>
+              <span className="text-neutral-700">·</span>
+              <TimestampItem
+                label="Archived"
+                value={formatDate(task.archived_at)}
               />
             </>
           )}
