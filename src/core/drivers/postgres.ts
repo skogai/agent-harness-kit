@@ -121,6 +121,10 @@ export class PostgresDriver implements DBDriver {
     return result
   }
 
+  async reconnect(): Promise<void> {
+    /* no-op — connection pool handles freshness */
+  }
+
   async close(): Promise<void> {
     await this.sql.end()
   }
@@ -158,5 +162,8 @@ class PostgresTxDriver implements DBDriver {
   }
 
   async ensureSchema(): Promise<void> { }
+  async reconnect(): Promise<void> {
+    /* no-op — connection pool handles freshness */
+  }
   async close(): Promise<void> { }
 }

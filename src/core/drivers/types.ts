@@ -13,5 +13,7 @@ export interface DBDriver {
   transaction<T>(fn: (tx: DBDriver) => Promise<T>): Promise<T>
   /** Create tables if they don't exist yet */
   ensureSchema(): Promise<void>
+  /** Close and reopen the underlying connection (for SQLite WAL staleness). No-op for PG/MySQL. */
+  reconnect(): Promise<void>
   close(): Promise<void>
 }

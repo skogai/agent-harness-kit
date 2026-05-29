@@ -139,6 +139,10 @@ export class MySQLDriver implements DBDriver {
     }
   }
 
+  async reconnect(): Promise<void> {
+    /* no-op — connection pool handles freshness */
+  }
+
   async close(): Promise<void> {
     await this.pool.end()
   }
@@ -175,5 +179,8 @@ class MySQLTxDriver implements DBDriver {
   }
 
   async ensureSchema(): Promise<void> { }
+  async reconnect(): Promise<void> {
+    /* no-op — connection pool handles freshness */
+  }
   async close(): Promise<void> { }
 }

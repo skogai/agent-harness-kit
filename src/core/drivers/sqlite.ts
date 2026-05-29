@@ -74,8 +74,10 @@ CREATE INDEX IF NOT EXISTS idx_action_tools_name ON action_tools(tool_name);
 
 export class SQLiteDriver implements DBDriver {
   private db: SQLiteDB
+  private dbPath: string
 
   constructor(dbPath: string) {
+    this.dbPath = dbPath
     mkdirSync(dirname(dbPath), { recursive: true })
     // Remove stale WAL/SHM files left by a crashed session — they cause SQLITE_IOERR.
     // A 0-byte WAL alongside a non-empty SHM means the last checkpoint never completed.
@@ -116,6 +118,13 @@ export class SQLiteDriver implements DBDriver {
 
   async execRaw(sql: string): Promise<void> {
     this.db.exec(sql)
+  }
+
+  async reconnect(): Promise<void> {
+    this.db.close()
+    this.db = openSQLite(this.dbPath)
+    this.db.exec('PRAGMA journal_mode = WAL')
+    this.db.exec('PRAGMA foreign_keys = ON')
   }
 
   async transaction<T>(fn: (tx: DBDriver) => Promise<T>): Promise<T> {

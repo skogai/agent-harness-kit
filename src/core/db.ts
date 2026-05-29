@@ -255,6 +255,10 @@ export class HarnessDB {
     }
   }
 
+  async reconnect(): Promise<void> {
+    await this.driver.reconnect()
+  }
+
   async close(): Promise<void> {
     await this.driver.close()
   }

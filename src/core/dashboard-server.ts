@@ -57,6 +57,7 @@ export function startDashboardServer(
 
   // ─── Stats overview ───────────────────────────────────────────────────────
   app.get('/api/stats', async (c) => {
+    await db.reconnect()
     const summary = await tasks.getStatusSummary()
     const byStatus: Record<string, number> = { pending: 0, in_progress: 0, done: 0, blocked: 0 }
     for (const { status, total } of summary) byStatus[status] = total
@@ -71,11 +72,13 @@ export function startDashboardServer(
 
   // ─── Tasks list ───────────────────────────────────────────────────────────
   app.get('/api/tasks', async (c) => {
+    await db.reconnect()
     return c.json(await tasks.getAllWithAcceptanceCounts())
   })
 
   // ─── Task detail ──────────────────────────────────────────────────────────
   app.get('/api/tasks/:id', async (c) => {
+    await db.reconnect()
     const id = parseInt(c.req.param('id'))
     const task = await tasks.getById(id)
     if (!task) return c.json({ error: 'Not found' }, 404)
@@ -87,35 +90,41 @@ export function startDashboardServer(
 
   // ─── Tools top ────────────────────────────────────────────────────────────
   app.get('/api/tools/top', async (c) => {
+    await db.reconnect()
     const limit = parseInt(c.req.query('limit') ?? '20')
     return c.json(await actions.getTopTools(limit))
   })
 
   // ─── Tools recent ─────────────────────────────────────────────────────────
   app.get('/api/tools/recent', async (c) => {
+    await db.reconnect()
     const limit = parseInt(c.req.query('limit') ?? '50')
     return c.json(await stats.getRecentTools(limit))
   })
 
   // ─── Files top ────────────────────────────────────────────────────────────
   app.get('/api/files/top', async (c) => {
+    await db.reconnect()
     const limit = parseInt(c.req.query('limit') ?? '20')
     return c.json(await stats.getTopFiles(limit))
   })
 
   // ─── Files recent ─────────────────────────────────────────────────────────
   app.get('/api/files/recent', async (c) => {
+    await db.reconnect()
     const limit = parseInt(c.req.query('limit') ?? '50')
     return c.json(await stats.getRecentFiles(limit))
   })
 
   // ─── Agents stats ─────────────────────────────────────────────────────────
   app.get('/api/agents/stats', async (c) => {
+    await db.reconnect()
     return c.json(await stats.getAgentStats())
   })
 
   // ─── Timeline ─────────────────────────────────────────────────────────────
   app.get('/api/timeline', async (c) => {
+    await db.reconnect()
     const limit = parseInt(c.req.query('limit') ?? '50')
     return c.json(await stats.getTimeline(limit))
   })
