@@ -168,6 +168,17 @@ tasks.update(taskId, 'done')
 bash health.sh   → must be green before closing
 ```
 
+
+---
+
+## PR Context Order
+
+When creating a PR via the CLI, gather context in this order:
+
+1. **First** — Search the feature task DB via MCP (agent-harness-kit tools: `tasks.get`, `actions.get`, `docs.search`)
+2. **Second** — Review chat history for relevant discussion, decisions, and requirements
+3. **Third** — Use git CLI to inspect file changes (`git diff`, `git status`, `git log`)
+
 ## Hard rules
 
 - **One task at a time.** Never pick a second task while one is in progress.
