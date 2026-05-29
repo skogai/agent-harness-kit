@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS tasks (
   assigned_to  TEXT,
   created_at   TEXT    NOT NULL,
   started_at   TEXT,
-  completed_at TEXT
+  completed_at TEXT,
+  archived_at  TEXT
 );
 
 CREATE TABLE IF NOT EXISTS task_acceptance (
@@ -96,6 +97,12 @@ export class SQLiteDriver implements DBDriver {
 
   async ensureSchema(): Promise<void> {
     this.db.exec(SCHEMA)
+    // Migration: add archived_at column (safe to run multiple times)
+    try {
+      this.db.exec('ALTER TABLE tasks ADD COLUMN archived_at TEXT')
+    } catch {
+      // Column already exists — ignore
+    }
   }
 
   async query<T>(sql: string, params: unknown[] = []): Promise<T[]> {

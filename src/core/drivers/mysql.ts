@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS tasks (
   assigned_to  VARCHAR(255),
   created_at   VARCHAR(30)  NOT NULL,
   started_at   VARCHAR(30),
-  completed_at VARCHAR(30)
+  completed_at VARCHAR(30),
+  archived_at  VARCHAR(30)
 );
 
 CREATE TABLE IF NOT EXISTS task_acceptance (
@@ -93,6 +94,12 @@ export class MySQLDriver implements DBDriver {
     try {
       for (const stmt of statements) {
         await conn.execute(stmt)
+      }
+      // Migration: add archived_at column (safe to run multiple times)
+      try {
+        await conn.execute('ALTER TABLE tasks ADD COLUMN archived_at VARCHAR(30)')
+      } catch {
+        // Column already exists — ignore
       }
     } finally {
       conn.release()
