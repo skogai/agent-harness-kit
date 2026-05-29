@@ -3,7 +3,7 @@ import { join, resolve } from 'path'
 
 import { write } from '@/utils/file'
 
-import { mergeClaudeMcpJson, mergeClaudeSettingsJson } from './mcp-merge'
+import { mergeClaudeMcpJson, mergeClaudeSettingsJson, mergeClaudeSettingsLocalJson } from './mcp-merge'
 import { appendGitignore, slugify, writeAgentFile } from './scaffold-utils'
 import {
   agentBuilder,
@@ -55,10 +55,12 @@ export class ClaudeCodeMaterializer implements Materializer {
     writeAgentFile(cwd, '.claude/agents/builder.md', translateFrontmatterForClaudeCode(agentBuilder({ projectName, writablePaths }), 'builder'))
     writeAgentFile(cwd, '.claude/agents/reviewer.md', translateFrontmatterForClaudeCode(agentReviewer({ projectName }), 'reviewer'))
 
-    // .claude/mcp.json — MERGE, never overwrite whole file
-    mergeClaudeMcpJson(join(cwd, '.claude/mcp.json'), config.tools.mcp.port)
+    // .mcp.json — MERGE, never overwrite whole file
+    mergeClaudeMcpJson(join(cwd, '.mcp.json'), config.tools.mcp.port)
     // .claude/settings.json — set `agent: "lead"` (the official Claude Code default-agent field)
     mergeClaudeSettingsJson(join(cwd, '.claude/settings.json'))
+    // .claude/settings.local.json — merge MCP tool permissions
+    mergeClaudeSettingsLocalJson(join(cwd, '.claude/settings.local.json'))
 
     // .gitignore additions
     appendGitignore(cwd)
@@ -85,8 +87,9 @@ export class ClaudeCodeMaterializer implements Materializer {
     writeAgentFile(cwd, '.claude/agents/reviewer.md', translateFrontmatterForClaudeCode(agentReviewer({ projectName }), 'reviewer'))
 
     // MCP config: always merge
-    mergeClaudeMcpJson(join(cwd, '.claude/mcp.json'), config.tools.mcp.port)
+    mergeClaudeMcpJson(join(cwd, '.mcp.json'), config.tools.mcp.port)
     mergeClaudeSettingsJson(join(cwd, '.claude/settings.json'))
+    mergeClaudeSettingsLocalJson(join(cwd, '.claude/settings.local.json'))
   }
 
   async migrate(config: HarnessConfig, _to: Provider, _cwd: string): Promise<void> {

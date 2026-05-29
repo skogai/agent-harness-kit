@@ -56,6 +56,56 @@ export function mergeClaudeSettingsJson(filePath: string): void {
   writeFileSync(filePath, JSON.stringify(merged, null, 2) + '\n', 'utf8')
 }
 
+// Merge MCP tool permissions into .claude/settings.local.json
+const MCP_PERMISSIONS = [
+  'mcp__agent-harness-kit__actions_start',
+  'mcp__agent-harness-kit__actions_write',
+  'mcp__agent-harness-kit__actions_complete',
+  'mcp__agent-harness-kit__actions_get',
+  'mcp__agent-harness-kit__actions_record_file',
+  'mcp__agent-harness-kit__actions_record_tool',
+  'mcp__agent-harness-kit__tasks_get',
+  'mcp__agent-harness-kit__tasks_claim',
+  'mcp__agent-harness-kit__tasks_update',
+  'mcp__agent-harness-kit__tasks_add',
+  'mcp__agent-harness-kit__tasks_acceptance_update',
+  'mcp__agent-harness-kit__tasks_edit',
+  'mcp__agent-harness-kit__tasks_archive',
+  'mcp__agent-harness-kit__tasks_unarchive',
+  'mcp__agent-harness-kit__docs_search',
+]
+
+export function mergeClaudeSettingsLocalJson(filePath: string): void {
+  mkdirSync(dirname(filePath), { recursive: true })
+
+  let existing: Record<string, unknown> = {}
+  if (existsSync(filePath)) {
+    try {
+      existing = JSON.parse(readFileSync(filePath, 'utf8')) as Record<string, unknown>
+    } catch {
+      // start fresh
+    }
+  }
+
+  const existingPermissions = (existing.permissions as Record<string, unknown>) ?? {}
+  const existingAllow = (existingPermissions.allow as string[]) ?? []
+  const existingServers = (existing.enabledMcpjsonServers as string[]) ?? []
+
+  const mergedAllow = Array.from(new Set([...existingAllow, ...MCP_PERMISSIONS]))
+  const mergedServers = Array.from(new Set([...existingServers, 'agent-harness-kit']))
+
+  const merged = {
+    ...existing,
+    permissions: {
+      ...existingPermissions,
+      allow: mergedAllow,
+    },
+    enabledMcpjsonServers: mergedServers,
+  }
+
+  writeFileSync(filePath, JSON.stringify(merged, null, 2) + '\n', 'utf8')
+}
+
 // ─── OpenCode ─────────────────────────────────────────────────────────────────
 
 export function mergeOpencodeJson(filePath: string, port: number): void {

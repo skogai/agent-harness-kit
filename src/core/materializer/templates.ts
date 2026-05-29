@@ -320,7 +320,7 @@ function stripFrontmatter(md: string): { description: string; body: string } {
   if (foldedMatch) {
     description = foldedMatch[1]
       .split('\n')
-      .map(l => l.trim())
+      .map((l) => l.trim())
       .filter(Boolean)
       .join(' ')
   } else {
@@ -381,40 +381,40 @@ export function agentReviewerToml(vars: { projectName: string }): string {
 
 const CLAUDE_CODE_MCP_TOOLS: Record<string, string[]> = {
   lead: [
-    'mcp__agent-harness-kit__actions.start',
-    'mcp__agent-harness-kit__actions.write',
-    'mcp__agent-harness-kit__actions.complete',
-    'mcp__agent-harness-kit__actions.get',
-    'mcp__agent-harness-kit__actions.record_tool',
-    'mcp__agent-harness-kit__tasks.get',
-    'mcp__agent-harness-kit__tasks.claim',
-    'mcp__agent-harness-kit__tasks.update',
-    'mcp__agent-harness-kit__tasks.add',
+    // 'mcp__agent-harness-kit__actions.start',
+    // 'mcp__agent-harness-kit__actions.write',
+    // 'mcp__agent-harness-kit__actions.complete',
+    // 'mcp__agent-harness-kit__actions.get',
+    // 'mcp__agent-harness-kit__actions.record_tool',
+    // 'mcp__agent-harness-kit__tasks.get',
+    // 'mcp__agent-harness-kit__tasks.claim',
+    // 'mcp__agent-harness-kit__tasks.update',
+    // 'mcp__agent-harness-kit__tasks.add',
   ],
   explorer: [
-    'mcp__agent-harness-kit__actions.start',
-    'mcp__agent-harness-kit__actions.write',
-    'mcp__agent-harness-kit__actions.complete',
-    'mcp__agent-harness-kit__actions.get',
-    'mcp__agent-harness-kit__actions.record_tool',
-    'mcp__agent-harness-kit__docs.search',
+    // 'mcp__agent-harness-kit__actions.start',
+    // 'mcp__agent-harness-kit__actions.write',
+    // 'mcp__agent-harness-kit__actions.complete',
+    // 'mcp__agent-harness-kit__actions.get',
+    // 'mcp__agent-harness-kit__actions.record_tool',
+    // 'mcp__agent-harness-kit__docs.search',
   ],
   builder: [
-    'mcp__agent-harness-kit__actions.start',
-    'mcp__agent-harness-kit__actions.write',
-    'mcp__agent-harness-kit__actions.complete',
-    'mcp__agent-harness-kit__actions.get',
-    'mcp__agent-harness-kit__actions.record_tool',
-    'mcp__agent-harness-kit__actions.record_file',
+    // 'mcp__agent-harness-kit__actions.start',
+    // 'mcp__agent-harness-kit__actions.write',
+    // 'mcp__agent-harness-kit__actions.complete',
+    // 'mcp__agent-harness-kit__actions.get',
+    // 'mcp__agent-harness-kit__actions.record_tool',
+    // 'mcp__agent-harness-kit__actions.record_file',
   ],
   reviewer: [
-    'mcp__agent-harness-kit__actions.start',
-    'mcp__agent-harness-kit__actions.write',
-    'mcp__agent-harness-kit__actions.complete',
-    'mcp__agent-harness-kit__actions.get',
-    'mcp__agent-harness-kit__actions.record_tool',
-    'mcp__agent-harness-kit__tasks.acceptance.update',
-    'mcp__agent-harness-kit__tasks.update',
+    // 'mcp__agent-harness-kit__actions.start',
+    // 'mcp__agent-harness-kit__actions.write',
+    // 'mcp__agent-harness-kit__actions.complete',
+    // 'mcp__agent-harness-kit__actions.get',
+    // 'mcp__agent-harness-kit__actions.record_tool',
+    // 'mcp__agent-harness-kit__tasks.acceptance.update',
+    // 'mcp__agent-harness-kit__tasks.update',
   ],
 }
 
@@ -430,17 +430,14 @@ export function translateFrontmatterForClaudeCode(
   agentName: 'lead' | 'explorer' | 'builder' | 'reviewer'
 ): string {
   const mcpTools = CLAUDE_CODE_MCP_TOOLS[agentName] ?? []
-  const mcpLines = mcpTools.map(t => `  - ${t}`).join('\n')
+  const mcpLines = mcpTools.map((t) => `  - ${t}`).join('\n')
 
   // Find the tools: block in frontmatter and append Task + mcp tools after last tool entry
   // We look for the pattern: a line with `  - SomeTool` followed by either `---` or a non-tool line
-  return md.replace(
-    /(tools:\n(?:  - (?!mcp__)[^\n]+\n)+)/,
-    (match) => {
-      const trimmed = match.trimEnd()
-      return `${trimmed}\n  - Task\n${mcpLines}\n`
-    }
-  )
+  return md.replace(/(tools:\n(?:  - (?!mcp__)[^\n]+\n)+)/, (match) => {
+    const trimmed = match.trimEnd()
+    return `${trimmed}\n  - Task\n${mcpLines}\n`
+  })
 }
 
 // ─── .gitignore additions ─────────────────────────────────────────────────────

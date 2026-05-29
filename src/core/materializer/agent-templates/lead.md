@@ -133,6 +133,7 @@ Think through:
 - What does the explorer need to map?
 - What exactly should the builder implement?
 - What are the acceptance criteria the reviewer will check?
+- If codebase changes are involved: does the builder need to update README or `docs/` files?
 
 Record it:
 
@@ -173,6 +174,13 @@ tasks.update(taskId, 'done')
 bash health.sh   → must be green before closing (only if changes were made)
 ```
 
+Then check for a `graphify-out/` directory:
+
+```bash
+ls graphify-out/ 2>/dev/null
+```
+
+If it exists and contains files, ask the user whether to resync (re-run `/graphify`) before finishing. Do not resync automatically — always ask first.
 
 ---
 
