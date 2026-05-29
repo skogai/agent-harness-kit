@@ -1,6 +1,8 @@
+/* eslint-disable @eslint-react/exhaustive-deps */
+/* eslint-disable @eslint-react/set-state-in-effect */
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { AgentBadge } from '@/components/shared/agent-badge'
 import { ErrorState } from '@/components/shared/error-state'
@@ -21,6 +23,7 @@ function TaskDetailPage() {
     data: task,
     isLoading,
     isError,
+    dataUpdatedAt,
   } = useQuery({
     queryKey: qk.task(Number(id)),
     queryFn: () => api.task(Number(id)),
@@ -32,6 +35,15 @@ function TaskDetailPage() {
   const [editAcceptance, setEditAcceptance] = useState(
     task?.acceptance.map((a) => a.criterion) ?? []
   )
+
+  useEffect(() => {
+    if (task) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setEditTitle(task.title)
+      setEditDescription(task.description ?? '')
+      setEditAcceptance(task.acceptance.map((a) => a.criterion))
+    }
+  }, [dataUpdatedAt])
 
   if (isLoading) return <LoadingState />
   if (isError || !task)
@@ -90,7 +102,7 @@ function TaskDetailPage() {
       />
 
       {/* Edit button */}
-      <div className="px-6">
+      <div className="px-6 pt-3">
         <button
           onClick={() => setEditing(true)}
           className="text-xs font-mono text-neutral-500 hover:text-[#fafafa] border border-[#1f1f1f] px-3 py-1.5 rounded transition-colors"
