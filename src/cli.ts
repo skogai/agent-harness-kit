@@ -10,7 +10,7 @@ import { runReset } from '@/commands/reset'
 import { runServe } from '@/commands/serve'
 import { runStatus } from '@/commands/status'
 import { runSync } from '@/commands/sync'
-import { runTaskAdd, runTaskDone, runTaskList } from '@/commands/task/index'
+import { runTaskAdd, runTaskDone, runTaskEdit, runTaskList } from '@/commands/task/index'
 import { pkg } from '@/core/package-data'
 import { checkForUpdate, printUpdateMessage } from '@/core/update-check'
 
@@ -96,6 +96,8 @@ task
   .command('list')
   .description('List tasks')
   .option('--status <status>', 'Filter by status: pending | in_progress | done | blocked')
+  .option('--archived', 'Show only archived tasks')
+  .option('--include-archived', 'Include archived tasks in the list')
   .option('--json', 'Output as JSON')
   .action(async (opts) => {
     await runTaskList(cwd, opts)
@@ -106,6 +108,13 @@ task
   .description('Mark a task as done')
   .action(async (idOrSlug: string) => {
     await runTaskDone(cwd, idOrSlug)
+  })
+
+task
+  .command('edit')
+  .description('Edit a task interactively')
+  .action(async () => {
+    await runTaskEdit(cwd)
   })
 
 // ─── dashboard ────────────────────────────────────────────────────────────────

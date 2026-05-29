@@ -97,6 +97,7 @@ export interface TaskRow {
   created_at: string
   started_at: string | null
   completed_at: string | null
+  archived_at: string | null
 }
 
 export interface TaskAcceptanceRow {

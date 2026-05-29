@@ -194,4 +194,66 @@ describe('HarnessDB', () => {
     assert.equal(result.added, 1)
     assert.equal(result.skipped, 1)
   })
+
+  test('archiveTask sets archived_at', async () => {
+    const task = await db.addTask({ slug: 'to-archive', title: 'To Archive' })
+    assert.equal(task.archived_at, null)
+
+    const archived = await db.archiveTask(task.id)
+    assert.notEqual(archived.archived_at, null)
+    assert.ok(archived.archived_at!)
+  })
+
+  test('unarchiveTask clears archived_at', async () => {
+    const task = await db.addTask({ slug: 'to-unarchive', title: 'To Unarchive' })
+    await db.archiveTask(task.id)
+
+    const unarchived = await db.unarchiveTask(task.id)
+    assert.equal(unarchived.archived_at, null)
+  })
+
+  test('getTasks excludes archived by default', async () => {
+    await db.addTask({ slug: 'active-a', title: 'Active A' })
+    await db.addTask({ slug: 'active-b', title: 'Active B' })
+    const task = await db.addTask({ slug: 'will-archive', title: 'Will Archive' })
+    await db.archiveTask(task.id)
+
+    const tasks = await db.getTasks()
+    assert.equal(tasks.length, 2)
+    assert.equal(tasks.find((t) => t.slug === 'will-archive'), undefined)
+  })
+
+  test('getTasks includes archived when includeArchived=true', async () => {
+    await db.addTask({ slug: 'active-c', title: 'Active C' })
+    const task = await db.addTask({ slug: 'archived-d', title: 'Archived D' })
+    await db.archiveTask(task.id)
+
+    const tasks = await db.getTasks(undefined, true)
+    assert.equal(tasks.length, 2)
+    assert.ok(tasks.find((t) => t.slug === 'archived-d'))
+    assert.ok(tasks.find((t) => t.slug === 'active-c'))
+  })
+
+  test('getStatusSummary excludes archived from counts', async () => {
+    await db.addTask({ slug: 'summary-a', title: 'Summary A' })
+    await db.addTask({ slug: 'summary-b', title: 'Summary B' })
+    const task = await db.addTask({ slug: 'summary-archived', title: 'Summary Archived' })
+    await db.archiveTask(task.id)
+
+    const summary = await db.getStatusSummary()
+    const total = summary.reduce((acc, s) => acc + s.total, 0)
+    assert.equal(total, 2) // archived should not be counted
+  })
+
+  test('getArchivedTasks returns only archived tasks', async () => {
+    await db.addTask({ slug: 'active-e', title: 'Active E' })
+    const t1 = await db.addTask({ slug: 'archived-f', title: 'Archived F' })
+    const t2 = await db.addTask({ slug: 'archived-g', title: 'Archived G' })
+    await db.archiveTask(t1.id)
+    await db.archiveTask(t2.id)
+
+    const archived = await db.getArchivedTasks()
+    assert.equal(archived.length, 2)
+    assert.equal(archived.find((t) => t.slug === 'active-e'), undefined)
+  })
 })
