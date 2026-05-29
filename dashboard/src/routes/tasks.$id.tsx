@@ -118,7 +118,7 @@ function TaskDetailPage() {
           onClick={() => setEditing(false)}
         >
           <div
-            className="bg-[#0a0a0a] border border-[#1f1f1f] rounded-lg p-6 w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto"
+            className="bg-[#0a0a0a] border border-[#1f1f1f] rounded-lg p-6 w-full md:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-4 max-h-[80vh] overflow-y-auto max-md:inset-0 max-md:rounded-none max-md:h-screen max-md:w-screen max-md:max-w-full max-md:max-h-full max-md:m-0"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="font-mono text-sm text-[#fafafa] mb-4">Edit Task</h3>
