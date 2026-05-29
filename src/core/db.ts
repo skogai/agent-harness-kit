@@ -55,8 +55,8 @@ export class HarnessDB {
     return (await this.tasks.getById(taskId))!
   }
 
-  async getTasks(status?: TaskStatus): Promise<TaskRow[]> {
-    return this.tasks.getAll(status)
+  async getTasks(status?: TaskStatus, includeArchived = false): Promise<TaskRow[]> {
+    return this.tasks.getAll(status, includeArchived)
   }
 
   async getTaskById(id: number): Promise<TaskRow | null> {
@@ -107,6 +107,33 @@ export class HarnessDB {
 
   async markAcceptanceMet(criterionId: number): Promise<void> {
     return this.tasks.markAcceptanceMet(criterionId)
+  }
+
+  async updateTask(id: number, params: { title?: string; description?: string | null; slug?: string }): Promise<TaskRow> {
+    await this.tasks.update(id, params)
+    await this.regenerateCurrentMd()
+    return (await this.tasks.getById(id))!
+  }
+
+  async updateTaskAcceptance(taskId: number, criteria: string[]): Promise<void> {
+    await this.tasks.replaceAcceptance(taskId, criteria)
+    await this.regenerateCurrentMd()
+  }
+
+  async archiveTask(id: number): Promise<TaskRow> {
+    await this.tasks.archive(id)
+    await this.regenerateCurrentMd()
+    return (await this.tasks.getById(id))!
+  }
+
+  async unarchiveTask(id: number): Promise<TaskRow> {
+    await this.tasks.unarchive(id)
+    await this.regenerateCurrentMd()
+    return (await this.tasks.getById(id))!
+  }
+
+  async getArchivedTasks(): Promise<TaskRow[]> {
+    return this.tasks.getArchived()
   }
 
   async getStatusSummary(): Promise<{ status: string; total: number }[]> {
@@ -249,7 +276,7 @@ export class HarnessDB {
 
   async exportJson(): Promise<{ tasks: TaskRow[]; actions: ActionRow[]; sections: ActionSectionRow[] }> {
     return {
-      tasks: await this.tasks.getAll(),
+      tasks: await this.tasks.getAll(undefined, true),
       actions: await this.actions.getAll(),
       sections: await this.actions.getAllSections(),
     }
@@ -282,7 +309,7 @@ export class HarnessDB {
   }
 
   async writeFeatureList(cwd: string): Promise<void> {
-    const allTasks = await this.tasks.getAll()
+    const allTasks = await this.tasks.getAll(undefined, true)
     const list = await Promise.all(
       allTasks.map(async (t) => ({
         slug: t.slug,

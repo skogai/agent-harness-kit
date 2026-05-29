@@ -73,7 +73,8 @@ export function startDashboardServer(
   // ─── Tasks list ───────────────────────────────────────────────────────────
   app.get('/api/tasks', async (c) => {
     await db.reconnect()
-    return c.json(await tasks.getAllWithAcceptanceCounts())
+    const includeArchived = c.req.query('includeArchived') === 'true'
+    return c.json(await tasks.getAllWithAcceptanceCounts(includeArchived))
   })
 
   // ─── Task detail ──────────────────────────────────────────────────────────
@@ -86,6 +87,49 @@ export function startDashboardServer(
     const acceptance = await tasks.getAcceptance(id)
     const taskActions = await actions.getWithDetails(id)
     return c.json({ ...task, acceptance, actions: taskActions })
+  })
+
+  // ─── Task update (PATCH) ────────────────────────────────────────────────
+  app.patch('/api/tasks/:id', async (c) => {
+    const id = parseInt(c.req.param('id'))
+    const task = await tasks.getById(id)
+    if (!task) return c.json({ error: 'Not found' }, 404)
+
+    const body = await c.req.json()
+    const updateParams: { title?: string; description?: string | null; slug?: string } = {}
+    if (body.title !== undefined) updateParams.title = body.title
+    if (body.description !== undefined) updateParams.description = body.description
+
+    await db.updateTask(id, updateParams)
+
+    if (body.acceptance !== undefined && Array.isArray(body.acceptance)) {
+      await db.updateTaskAcceptance(id, body.acceptance.map((a: string) => a.trim()).filter(Boolean))
+    }
+
+    const updated = await tasks.getById(id)
+    const acceptance = await tasks.getAcceptance(id)
+    const taskActions = await actions.getWithDetails(id)
+    return c.json({ ...updated, acceptance, actions: taskActions })
+  })
+
+  // ─── Archive task ─────────────────────────────────────────────────────────
+  app.patch('/api/tasks/:id/archive', async (c) => {
+    await db.reconnect()
+    const id = parseInt(c.req.param('id'))
+    const task = await tasks.getById(id)
+    if (!task) return c.json({ error: 'Not found' }, 404)
+    const updated = await db.archiveTask(id)
+    return c.json(updated)
+  })
+
+  // ─── Unarchive task ──────────────────────────────────────────────────────
+  app.patch('/api/tasks/:id/unarchive', async (c) => {
+    await db.reconnect()
+    const id = parseInt(c.req.param('id'))
+    const task = await tasks.getById(id)
+    if (!task) return c.json({ error: 'Not found' }, 404)
+    const updated = await db.unarchiveTask(id)
+    return c.json(updated)
   })
 
   // ─── Tools top ────────────────────────────────────────────────────────────

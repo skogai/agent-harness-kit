@@ -75,7 +75,7 @@ const TOOLS = [
   },
   {
     name: 'tasks.get',
-    description: 'List tasks, optionally filtered by status.',
+    description: 'List tasks, optionally filtered by status. Excludes archived tasks by default.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -83,6 +83,10 @@ const TOOLS = [
           type: 'string',
           enum: ['pending', 'in_progress', 'done', 'blocked'],
           description: 'Filter by status (omit for all tasks)',
+        },
+        includeArchived: {
+          type: 'boolean',
+          description: 'If true, include archived tasks in results',
         },
       },
     },
@@ -190,6 +194,46 @@ const TOOLS = [
       required: ['actionId', 'toolName'],
     },
   },
+  {
+    name: 'tasks.edit',
+    description: 'Edit an existing task (title, description, acceptance criteria). Omitted fields keep their current values.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: 'Task ID to edit' },
+        title: { type: 'string', description: 'New title (optional)' },
+        description: { type: 'string', description: 'New description (optional, null to clear)' },
+        acceptance: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'New acceptance criteria list (optional, null to keep existing)',
+        },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'tasks.archive',
+    description: 'Archive a task. Archived tasks are hidden from default views (CLI and dashboard).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: 'Task ID to archive' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'tasks.unarchive',
+    description: 'Unarchive a previously archived task, restoring it to default views.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: 'Task ID to unarchive' },
+      },
+      required: ['id'],
+    },
+  },
 ] as const
 
 // ─── Server ───────────────────────────────────────────────────────────────────
@@ -266,9 +310,10 @@ async function dispatch(
 
     case 'tasks.get': {
       const status = args['status'] as string | undefined
+      const includeArchived = args['includeArchived'] as boolean | undefined
       const tasks = status
-        ? await db.getTasks(status as TaskStatus)
-        : await db.getTasks()
+        ? await db.getTasks(status as TaskStatus, includeArchived ?? false)
+        : await db.getTasks(undefined, includeArchived ?? false)
       return ok(JSON.stringify(tasks, null, 2))
     }
 
@@ -329,6 +374,35 @@ async function dispatch(
       const resultSummary = args['resultSummary'] as string | undefined
       await db.recordTool(actionId, toolName, argsJson, resultSummary)
       return ok(JSON.stringify({ actionId, toolName, recorded: true }))
+    }
+
+    case 'tasks.edit': {
+      const id = num(args, 'id')
+      const title = args['title'] as string | undefined
+      const description = args['description'] as string | null | undefined
+      const acceptance = args['acceptance'] as string[] | null | undefined
+
+      const task = await db.getTaskById(id)
+      if (!task) return ok(JSON.stringify({ error: 'Task not found', taskId: id }), true)
+
+      await db.updateTask(id, { title, description: description !== undefined ? description : undefined })
+      if (acceptance !== undefined && acceptance !== null) {
+        await db.updateTaskAcceptance(id, acceptance)
+      }
+      const updated = await db.getTaskById(id)
+      return ok(JSON.stringify(updated))
+    }
+
+    case 'tasks.archive': {
+      const id = num(args, 'id')
+      const task = await db.archiveTask(id)
+      return ok(JSON.stringify(task))
+    }
+
+    case 'tasks.unarchive': {
+      const id = num(args, 'id')
+      const task = await db.unarchiveTask(id)
+      return ok(JSON.stringify(task))
     }
 
     default:
