@@ -34,12 +34,12 @@ function FilesPage() {
       <div className="p-6 space-y-8">
         {/* Most-touched files */}
         <div>
-          <h2 className="font-mono text-xs text-neutral-500 uppercase tracking-wider mb-3">
+          <h2 className="font-mono text-xs text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
             Most Touched
           </h2>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#1f1f1f]">
+              <tr className="border-b border-[var(--color-border)]">
                 {[
                   'File Path',
                   'Total',
@@ -50,7 +50,7 @@ function FilesPage() {
                 ].map((h) => (
                   <th
                     key={h}
-                    className="text-left font-mono text-[10px] text-neutral-600 uppercase tracking-wider px-4 py-2"
+                    className="text-left font-mono text-[10px] text-[var(--color-text-faint)] uppercase tracking-wider px-4 py-2"
                   >
                     {h}
                   </th>
@@ -62,15 +62,15 @@ function FilesPage() {
               {(topFiles.data ?? []).map((f) => (
                 <tr
                   key={f.file_path}
-                  className="border-b border-[#1f1f1f] hover:bg-[#0a0a0a] transition-colors"
+                  className="border-b border-[var(--color-border)] hover:bg-[var(--color-bg-surface)] transition-colors"
                 >
-                  <td className="px-4 py-2 font-mono text-xs text-neutral-300 max-w-xs truncate">
+                  <td className="px-4 py-2 font-mono text-xs text-[var(--color-text-secondary)] max-w-xs truncate">
                     {f.file_path}
                   </td>
-                  <td className="px-4 py-2 font-mono text-xs text-neutral-400">
+                  <td className="px-4 py-2 font-mono text-xs text-[var(--color-text-secondary)]">
                     {f.total}
                   </td>
-                  <td className="px-4 py-2 font-mono text-xs text-neutral-600">
+                  <td className="px-4 py-2 font-mono text-xs text-[var(--color-text-faint)]">
                     {f.read || '—'}
                   </td>
                   <td className="px-4 py-2 font-mono text-xs text-green-400">
@@ -93,17 +93,17 @@ function FilesPage() {
 
         {/* Recent file ops */}
         <div>
-          <h2 className="font-mono text-xs text-neutral-500 uppercase tracking-wider mb-3">
+          <h2 className="font-mono text-xs text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
             Recent Operations
           </h2>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#1f1f1f]">
+              <tr className="border-b border-[var(--color-border)]">
                 {['Op', 'File Path', 'Agent', 'Task', 'Notes', 'When'].map(
                   (h) => (
                     <th
                       key={h}
-                      className="text-left font-mono text-[10px] text-neutral-600 uppercase tracking-wider px-4 py-2"
+                      className="text-left font-mono text-[10px] text-[var(--color-text-faint)] uppercase tracking-wider px-4 py-2"
                     >
                       {h}
                     </th>
@@ -129,23 +129,23 @@ function FilesPage() {
 
 function RecentFileRow({ file }: { file: RecentFile }) {
   return (
-    <tr className="border-b border-[#1f1f1f] hover:bg-[#0a0a0a] transition-colors">
+    <tr className="border-b border-[var(--color-border)] hover:bg-[var(--color-bg-surface)] transition-colors">
       <td className="px-4 py-2">
         <OperationBadge op={file.operation} />
       </td>
-      <td className="px-4 py-2 font-mono text-xs text-neutral-300 max-w-[220px] truncate">
+      <td className="px-4 py-2 font-mono text-xs text-[var(--color-text-secondary)] max-w-[220px] truncate">
         {file.file_path}
       </td>
       <td className="px-4 py-2">
         <AgentBadge agent={file.agent} size="xs" />
       </td>
-      <td className="px-4 py-2 font-mono text-xs text-neutral-500 max-w-[120px] truncate">
+      <td className="px-4 py-2 font-mono text-xs text-[var(--color-text-muted)] max-w-[120px] truncate">
         {file.task_slug}
       </td>
-      <td className="px-4 py-2 text-xs text-neutral-600 max-w-[160px] truncate">
+      <td className="px-4 py-2 text-xs text-[var(--color-text-faint)] max-w-[160px] truncate">
         {file.notes ?? '—'}
       </td>
-      <td className="px-4 py-2 font-mono text-[10px] text-neutral-700">
+      <td className="px-4 py-2 font-mono text-[10px] text-[var(--color-text-faint)]">
         {formatDate(file.called_at)}
       </td>
     </tr>

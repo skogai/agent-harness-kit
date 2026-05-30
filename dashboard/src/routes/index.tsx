@@ -32,7 +32,7 @@ function Overview() {
         {/* Status cards */}
         <div className="grid grid-cols-4 gap-3">
           {[
-            { label: 'Pending', key: 'pending', color: 'text-neutral-400' },
+            { label: 'Pending', key: 'pending', color: 'text-[var(--color-text-secondary)]' },
             {
               label: 'In Progress',
               key: 'in_progress',
@@ -43,12 +43,12 @@ function Overview() {
           ].map(({ label, key, color }) => (
             <div
               key={key}
-              className="bg-[#0a0a0a] border border-[#1f1f1f] rounded-md p-4"
+              className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-md p-4"
             >
               <div className={`font-mono text-2xl font-semibold ${color}`}>
                 {s ? (s.byStatus[key as keyof typeof s.byStatus] ?? 0) : '—'}
               </div>
-              <div className="text-xs text-neutral-500 mt-1">{label}</div>
+              <div className="text-xs text-[var(--color-text-muted)] mt-1">{label}</div>
             </div>
           ))}
         </div>
@@ -62,12 +62,12 @@ function Overview() {
           ].map(({ label, value }) => (
             <div
               key={label}
-              className="bg-[#0a0a0a] border border-[#1f1f1f] rounded-md px-4 py-3 flex items-center gap-3"
+              className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-md px-4 py-3 flex items-center gap-3"
             >
-              <span className="font-mono text-lg text-[#fafafa]">
+              <span className="font-mono text-lg text-[var(--color-text-primary)]">
                 {value ?? '—'}
               </span>
-              <span className="text-xs text-neutral-500">{label}</span>
+              <span className="text-xs text-[var(--color-text-muted)]">{label}</span>
             </div>
           ))}
         </div>
@@ -75,11 +75,11 @@ function Overview() {
         <div className="grid grid-cols-2 gap-6">
           {/* Active tasks */}
           <div>
-            <h2 className="font-mono text-xs text-neutral-500 uppercase tracking-wider mb-3">
+            <h2 className="font-mono text-xs text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
               Active Tasks
             </h2>
             {activeTasks.length === 0 ? (
-              <p className="text-xs text-neutral-600 font-mono">
+              <p className="text-xs text-[var(--color-text-faint)] font-mono">
                 No tasks in progress
               </p>
             ) : (
@@ -89,14 +89,14 @@ function Overview() {
                     key={t.id}
                     to="/tasks/$id"
                     params={{ id: String(t.id) }}
-                    className="block bg-[#0a0a0a] border border-[#1f1f1f] rounded-md p-3 hover:border-neutral-700 transition-colors"
+                    className="block bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-md p-3 hover:border-[var(--color-border)] transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <div className="font-mono text-sm text-[#fafafa] truncate">
+                        <div className="font-mono text-sm text-[var(--color-text-primary)] truncate">
                           {t.title}
                         </div>
-                        <div className="font-mono text-xs text-neutral-600 mt-0.5">
+                        <div className="font-mono text-xs text-[var(--color-text-faint)] mt-0.5">
                           {t.slug}
                         </div>
                       </div>
@@ -106,13 +106,13 @@ function Overview() {
                     </div>
                     {t.acceptance_total > 0 && (
                       <div className="mt-2">
-                        <div className="flex justify-between text-[10px] font-mono text-neutral-600 mb-1">
+                        <div className="flex justify-between text-[10px] font-mono text-[var(--color-text-faint)] mb-1">
                           <span>acceptance</span>
                           <span>
                             {t.acceptance_met}/{t.acceptance_total}
                           </span>
                         </div>
-                        <div className="w-full bg-neutral-900 rounded-full h-1">
+                        <div className="w-full bg-[var(--color-bg-elevated)] rounded-full h-1">
                           <div
                             className="bg-green-600 h-1 rounded-full transition-all"
                             style={{
@@ -130,7 +130,7 @@ function Overview() {
 
           {/* Recent timeline */}
           <div>
-            <h2 className="font-mono text-xs text-neutral-500 uppercase tracking-wider mb-3">
+            <h2 className="font-mono text-xs text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
               Recent Activity
             </h2>
             <div className="space-y-1">
@@ -138,7 +138,7 @@ function Overview() {
                 <TimelineRow key={entry.id} entry={entry} />
               ))}
               {timeline.data?.length === 0 && (
-                <p className="text-xs text-neutral-600 font-mono">
+                <p className="text-xs text-[var(--color-text-faint)] font-mono">
                   No activity yet
                 </p>
               )}
@@ -155,21 +155,21 @@ function TimelineRow({ entry }: { entry: TimelineEntry }) {
     <Link
       to="/tasks/$id"
       params={{ id: String(entry.task_id) }}
-      className="flex items-start gap-2 px-2 py-1.5 rounded hover:bg-[#0a0a0a] transition-colors group"
+      className="flex items-start gap-2 px-2 py-1.5 rounded hover:bg-[var(--color-bg-surface)] transition-colors group"
     >
       <AgentBadge agent={entry.agent} size="xs" />
       <div className="min-w-0 flex-1">
-        <div className="text-xs text-neutral-300 truncate group-hover:text-white transition-colors">
+        <div className="text-xs text-[var(--color-text-secondary)] truncate group-hover:text-[var(--color-text-primary)] transition-colors">
           {entry.summary ?? entry.task_title}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className="font-mono text-[10px] text-neutral-600">
+          <span className="font-mono text-[10px] text-[var(--color-text-faint)]">
             {entry.task_slug}
           </span>
           <StatusBadge status={entry.status} size="xs" />
         </div>
       </div>
-      <span className="font-mono text-[10px] text-neutral-700 shrink-0">
+      <span className="font-mono text-[10px] text-[var(--color-text-faint)] shrink-0">
         {formatDate(entry.created_at)}
       </span>
     </Link>

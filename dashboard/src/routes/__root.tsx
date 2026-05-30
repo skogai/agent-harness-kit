@@ -1,5 +1,7 @@
 import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router'
 
+import { useTheme } from '../hooks/useTheme'
+
 import type { QueryClient } from '@tanstack/react-query'
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
@@ -15,13 +17,15 @@ const NAV = [
 ] as const
 
 function RootLayout() {
+  const { theme, toggle } = useTheme()
+
   return (
-    <div className="flex h-screen bg-black text-[#fafafa] overflow-hidden">
+    <div className="flex h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] overflow-hidden">
       {/* Sidebar */}
-      <nav className="w-48 border-r border-[#1f1f1f] flex flex-col shrink-0">
-        <div className="px-4 py-4 border-b border-[#1f1f1f]">
-          <span className="font-mono font-bold text-sm text-green-400">ahk</span>
-          <span className="font-mono text-sm text-neutral-600 ml-1.5">dashboard</span>
+      <nav className="w-48 border-r border-[var(--color-border)] flex flex-col shrink-0">
+        <div className="px-4 py-4 border-b border-[var(--color-border)]">
+          <span className="font-mono font-bold text-sm text-[var(--color-accent)]">ahk</span>
+          <span className="font-mono text-sm text-[var(--color-text-muted)] ml-1.5">dashboard</span>
         </div>
 
         <div className="flex-1 py-2 flex flex-col gap-0.5 px-2 overflow-y-auto">
@@ -30,18 +34,25 @@ function RootLayout() {
               key={to}
               to={to}
               activeOptions={{ exact }}
-              className="font-mono text-sm px-3 py-1.5 rounded text-neutral-500 hover:text-[#fafafa] hover:bg-[#0a0a0a] transition-colors"
-              activeProps={{ className: 'font-mono text-sm px-3 py-1.5 rounded text-[#fafafa] bg-[#0a0a0a]' }}
+              className="font-mono text-sm px-3 py-1.5 rounded text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] transition-colors"
+              activeProps={{ className: 'font-mono text-sm px-3 py-1.5 rounded text-[var(--color-text-primary)] bg-[var(--color-bg-surface)]' }}
             >
               {label}
             </Link>
           ))}
         </div>
 
-        <div className="px-4 py-3 border-t border-[#1f1f1f]">
+        <div className="px-4 py-3 border-t border-[var(--color-border)]">
           <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
-            <span className="font-mono text-[10px] text-neutral-600">live</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] inline-block" />
+            <span className="font-mono text-[10px] text-[var(--color-text-muted)]">live</span>
+            <button
+              onClick={toggle}
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="ml-auto font-mono text-[10px] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors px-1 py-0.5 rounded hover:bg-[var(--color-bg-elevated)]"
+            >
+              {theme === 'dark' ? '☀' : '🌙'}
+            </button>
           </div>
         </div>
       </nav>

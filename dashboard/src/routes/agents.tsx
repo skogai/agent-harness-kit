@@ -32,7 +32,7 @@ function AgentsPage() {
         </div>
 
         {agents.length === 0 && !isLoading && (
-          <p className="font-mono text-xs text-neutral-600">
+          <p className="font-mono text-xs text-[var(--color-text-faint)]">
             No agent activity yet.
           </p>
         )}
@@ -40,12 +40,12 @@ function AgentsPage() {
         {/* All actions table */}
         {agents.length > 0 && (
           <div className="mt-6">
-            <h2 className="font-mono text-xs text-neutral-500 uppercase tracking-wider mb-3">
+            <h2 className="font-mono text-xs text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
               Summary Table
             </h2>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#1f1f1f]">
+                <tr className="border-b border-[var(--color-border)]">
                   {[
                     'Agent',
                     'Total Actions',
@@ -56,7 +56,7 @@ function AgentsPage() {
                   ].map((h) => (
                     <th
                       key={h}
-                      className="text-left font-mono text-[10px] text-neutral-600 uppercase tracking-wider px-4 py-2"
+                      className="text-left font-mono text-[10px] text-[var(--color-text-faint)] uppercase tracking-wider px-4 py-2"
                     >
                       {h}
                     </th>
@@ -67,7 +67,7 @@ function AgentsPage() {
                 {agents.map((a) => (
                   <tr
                     key={a.agent}
-                    className="border-b border-[#1f1f1f] hover:bg-[#0a0a0a] transition-colors"
+                    className="border-b border-[var(--color-border)] hover:bg-[var(--color-bg-surface)] transition-colors"
                   >
                     <td className="px-4 py-3">
                       <AgentBadge agent={a.agent} />
@@ -105,15 +105,15 @@ function AgentCard({ stat }: { stat: AgentStat }) {
       : 0;
 
   return (
-    <div className="bg-[#0a0a0a] border border-[#1f1f1f] rounded-md p-4 space-y-3">
+    <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-md p-4 space-y-3">
       <div className="flex items-center justify-between">
         <AgentBadge agent={stat.agent} />
-        <span className="font-mono text-xs text-neutral-600">
+        <span className="font-mono text-xs text-[var(--color-text-faint)]">
           {pctDone}% done
         </span>
       </div>
 
-      <div className="w-full bg-neutral-900 rounded-full h-1">
+      <div className="w-full bg-[var(--color-bg-elevated)] rounded-full h-1">
         <div
           className="bg-green-700 h-1 rounded-full"
           style={{ width: `${pctDone}%` }}
@@ -155,8 +155,8 @@ function Stat({
 }) {
   return (
     <div className="flex justify-between items-center">
-      <span className="text-xs text-neutral-600">{label}</span>
-      <span className={`font-mono text-xs ${color ?? 'text-neutral-300'}`}>
+      <span className="text-xs text-[var(--color-text-faint)]">{label}</span>
+      <span className={`font-mono text-xs ${color ?? 'text-[var(--color-text-secondary)]'}`}>
         {value}
       </span>
     </div>
