@@ -57,7 +57,7 @@ export function mergeClaudeSettingsJson(filePath: string): void {
 }
 
 // Merge MCP tool permissions into .claude/settings.local.json
-const MCP_PERMISSIONS = [
+export const MCP_CLAUDE_PERMISSIONS = [
   'mcp__agent-harness-kit__actions_start',
   'mcp__agent-harness-kit__actions_write',
   'mcp__agent-harness-kit__actions_complete',
@@ -91,7 +91,7 @@ export function mergeClaudeSettingsLocalJson(filePath: string): void {
   const existingAllow = (existingPermissions.allow as string[]) ?? []
   const existingServers = (existing.enabledMcpjsonServers as string[]) ?? []
 
-  const mergedAllow = Array.from(new Set([...existingAllow, ...MCP_PERMISSIONS]))
+  const mergedAllow = Array.from(new Set([...existingAllow, ...MCP_CLAUDE_PERMISSIONS]))
   const mergedServers = Array.from(new Set([...existingServers, 'agent-harness-kit']))
 
   const merged = {

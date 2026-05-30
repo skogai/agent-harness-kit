@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { MCP_CLAUDE_PERMISSIONS } from './mcp-merge'
+
 import type { HarnessConfig } from '@/types'
 
 // ─── Agent template loader ────────────────────────────────────────────────────
@@ -379,45 +381,6 @@ export function agentReviewerToml(vars: { projectName: string }): string {
 
 // ─── Claude Code frontmatter translation ─────────────────────────────────────
 
-const CLAUDE_CODE_MCP_TOOLS: Record<string, string[]> = {
-  lead: [
-    // 'mcp__agent-harness-kit__actions.start',
-    // 'mcp__agent-harness-kit__actions.write',
-    // 'mcp__agent-harness-kit__actions.complete',
-    // 'mcp__agent-harness-kit__actions.get',
-    // 'mcp__agent-harness-kit__actions.record_tool',
-    // 'mcp__agent-harness-kit__tasks.get',
-    // 'mcp__agent-harness-kit__tasks.claim',
-    // 'mcp__agent-harness-kit__tasks.update',
-    // 'mcp__agent-harness-kit__tasks.add',
-  ],
-  explorer: [
-    // 'mcp__agent-harness-kit__actions.start',
-    // 'mcp__agent-harness-kit__actions.write',
-    // 'mcp__agent-harness-kit__actions.complete',
-    // 'mcp__agent-harness-kit__actions.get',
-    // 'mcp__agent-harness-kit__actions.record_tool',
-    // 'mcp__agent-harness-kit__docs.search',
-  ],
-  builder: [
-    // 'mcp__agent-harness-kit__actions.start',
-    // 'mcp__agent-harness-kit__actions.write',
-    // 'mcp__agent-harness-kit__actions.complete',
-    // 'mcp__agent-harness-kit__actions.get',
-    // 'mcp__agent-harness-kit__actions.record_tool',
-    // 'mcp__agent-harness-kit__actions.record_file',
-  ],
-  reviewer: [
-    // 'mcp__agent-harness-kit__actions.start',
-    // 'mcp__agent-harness-kit__actions.write',
-    // 'mcp__agent-harness-kit__actions.complete',
-    // 'mcp__agent-harness-kit__actions.get',
-    // 'mcp__agent-harness-kit__actions.record_tool',
-    // 'mcp__agent-harness-kit__tasks.acceptance.update',
-    // 'mcp__agent-harness-kit__tasks.update',
-  ],
-}
-
 /**
  * Takes a template markdown string (with simple tools list) and injects
  * `Task` + the agent-specific `mcp__agent-harness-kit__*` tools into the
@@ -427,10 +390,9 @@ const CLAUDE_CODE_MCP_TOOLS: Record<string, string[]> = {
  */
 export function translateFrontmatterForClaudeCode(
   md: string,
-  agentName: 'lead' | 'explorer' | 'builder' | 'reviewer'
+  _agentName: 'lead' | 'explorer' | 'builder' | 'reviewer'
 ): string {
-  const mcpTools = CLAUDE_CODE_MCP_TOOLS[agentName] ?? []
-  const mcpLines = mcpTools.map((t) => `  - ${t}`).join('\n')
+  const mcpLines = MCP_CLAUDE_PERMISSIONS.map((t) => `  - ${t}`).join('\n')
 
   // Find the tools: block in frontmatter and append Task + mcp tools after last tool entry
   // We look for the pattern: a line with `  - SomeTool` followed by either `---` or a non-tool line
