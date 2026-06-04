@@ -2,7 +2,13 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { MCP_CLAUDE_PERMISSIONS } from './mcp-merge'
+import {
+  MCP_CLAUDE_PERMISSIONS,
+  MCP_CLAUDE_PERMISSIONS_BUILDER,
+  MCP_CLAUDE_PERMISSIONS_EXPLORER,
+  MCP_CLAUDE_PERMISSIONS_LEAD,
+  MCP_CLAUDE_PERMISSIONS_REVIEWER,
+} from './mcp-merge'
 
 import type { HarnessConfig } from '@/types'
 
@@ -390,9 +396,16 @@ export function agentReviewerToml(vars: { projectName: string }): string {
  */
 export function translateFrontmatterForClaudeCode(
   md: string,
-  _agentName: 'lead' | 'explorer' | 'builder' | 'reviewer'
+  agentName: 'lead' | 'explorer' | 'builder' | 'reviewer'
 ): string {
-  const mcpLines = MCP_CLAUDE_PERMISSIONS.map((t) => `  - ${t}`).join('\n')
+  const permissionsMap: Record<string, string[]> = {
+    lead: MCP_CLAUDE_PERMISSIONS_LEAD,
+    explorer: MCP_CLAUDE_PERMISSIONS_EXPLORER,
+    builder: MCP_CLAUDE_PERMISSIONS_BUILDER,
+    reviewer: MCP_CLAUDE_PERMISSIONS_REVIEWER,
+  }
+  const permissions = permissionsMap[agentName] ?? MCP_CLAUDE_PERMISSIONS
+  const mcpLines = permissions.map((t) => `  - ${t}`).join('\n')
 
   // Find the tools: block in frontmatter and append Task + mcp tools after last tool entry
   // We look for the pattern: a line with `  - SomeTool` followed by either `---` or a non-tool line

@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS tasks (
   created_at   TEXT    NOT NULL,
   started_at   TEXT,
   completed_at TEXT,
-  archived_at  TEXT
+  archived_at  TEXT,
+  updated_at   TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS task_acceptance (
@@ -100,6 +101,13 @@ export class SQLiteDriver implements DBDriver {
     // Migration: add archived_at column (safe to run multiple times)
     try {
       this.db.exec('ALTER TABLE tasks ADD COLUMN archived_at TEXT')
+    } catch {
+      // Column already exists — ignore
+    }
+    // Migration: add updated_at column (safe to run multiple times)
+    try {
+      this.db.exec(`ALTER TABLE tasks ADD COLUMN updated_at TEXT NOT NULL DEFAULT (datetime('now'))`)
+      this.db.exec(`UPDATE tasks SET updated_at = COALESCE(completed_at, started_at, created_at) WHERE updated_at IS NULL OR updated_at = ''`)
     } catch {
       // Column already exists — ignore
     }

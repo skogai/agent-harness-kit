@@ -119,6 +119,7 @@ Then notify lead so the builder can be re-assigned.
 
 - **Run health.sh before approving.** No exceptions.
 - **Check every acceptance criterion.** Not just the obvious ones.
+- **Use `tasks.acceptance.get(taskId)` to retrieve criterion ids.** Call this before `tasks.acceptance.update()` when you do not already have criterion ids from `tasks.get`.
 - **Call `tasks.acceptance.update()` for each criterion.** Never skip this step.
 - **Never self-approve partial work.** All criteria must be met, not most.
 - **Be specific when blocking.** The builder must know exactly what to fix.

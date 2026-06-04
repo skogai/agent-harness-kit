@@ -17,8 +17,8 @@ export class TaskRepository {
   }): Promise<number> {
     const now = new Date().toISOString()
     return this.driver.insert(
-      `INSERT INTO tasks (slug, title, description, status, created_at) VALUES (?, ?, ?, ?, ?)`,
-      [params.slug, params.title, params.description ?? null, params.status ?? 'pending', now],
+      `INSERT INTO tasks (slug, title, description, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,
+      [params.slug, params.title, params.description ?? null, params.status ?? 'pending', now, now],
     )
   }
 
@@ -46,7 +46,7 @@ export class TaskRepository {
     if (conditions.length > 0) {
       sql += ` WHERE ${conditions.join(' AND ')}`
     }
-    sql += ` ORDER BY id`
+    sql += ` ORDER BY CASE status WHEN 'pending' THEN 1 WHEN 'in_progress' THEN 2 WHEN 'blocked' THEN 3 WHEN 'done' THEN 4 ELSE 5 END, updated_at DESC`
 
     return this.driver.query<TaskRow>(sql, params)
   }
@@ -62,7 +62,7 @@ export class TaskRepository {
     if (!includeArchived) {
       sql += ` WHERE t.archived_at IS NULL`
     }
-    sql += ` GROUP BY t.id ORDER BY t.id`
+    sql += ` GROUP BY t.id ORDER BY CASE t.status WHEN 'pending' THEN 1 WHEN 'in_progress' THEN 2 WHEN 'blocked' THEN 3 WHEN 'done' THEN 4 ELSE 5 END, t.updated_at DESC`
     return this.driver.query<TaskWithAcceptance>(sql)
   }
 
@@ -82,28 +82,32 @@ export class TaskRepository {
   }
 
   async setStatus(id: number, status: TaskStatus, extra?: { started_at?: string; completed_at?: string }): Promise<void> {
+    const now = new Date().toISOString()
     if (extra?.started_at) {
       await this.driver.exec(
-        `UPDATE tasks SET status = ?, started_at = ? WHERE id = ?`,
-        [status, extra.started_at, id],
+        `UPDATE tasks SET status = ?, started_at = ?, updated_at = ? WHERE id = ?`,
+        [status, extra.started_at, now, id],
       )
     } else if (extra?.completed_at) {
       await this.driver.exec(
-        `UPDATE tasks SET status = ?, completed_at = ? WHERE id = ?`,
-        [status, extra.completed_at, id],
+        `UPDATE tasks SET status = ?, completed_at = ?, updated_at = ? WHERE id = ?`,
+        [status, extra.completed_at, now, id],
       )
     } else {
-      await this.driver.exec(`UPDATE tasks SET status = ? WHERE id = ?`, [status, id])
+      await this.driver.exec(`UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?`, [status, now, id])
     }
   }
 
   async update(id: number, params: { title?: string; description?: string | null; slug?: string }): Promise<void> {
     const sets: string[] = []
     const vals: unknown[] = []
+    const now = new Date().toISOString()
     if (params.title !== undefined) { sets.push('title = ?'); vals.push(params.title) }
     if (params.description !== undefined) { sets.push('description = ?'); vals.push(params.description) }
     if (params.slug !== undefined) { sets.push('slug = ?'); vals.push(params.slug) }
     if (sets.length === 0) return
+    sets.push('updated_at = ?')
+    vals.push(now)
     vals.push(id)
     await this.driver.exec(`UPDATE tasks SET ${sets.join(', ')} WHERE id = ?`, vals)
   }
@@ -120,11 +124,12 @@ export class TaskRepository {
 
   async archive(id: number): Promise<void> {
     const now = new Date().toISOString()
-    await this.driver.exec(`UPDATE tasks SET archived_at = ? WHERE id = ?`, [now, id])
+    await this.driver.exec(`UPDATE tasks SET archived_at = ?, updated_at = ? WHERE id = ?`, [now, now, id])
   }
 
   async unarchive(id: number): Promise<void> {
-    await this.driver.exec(`UPDATE tasks SET archived_at = NULL WHERE id = ?`, [id])
+    const now = new Date().toISOString()
+    await this.driver.exec(`UPDATE tasks SET archived_at = NULL, updated_at = ? WHERE id = ?`, [now, id])
   }
 
   async getArchived(): Promise<TaskRow[]> {
@@ -135,8 +140,8 @@ export class TaskRepository {
 
   async claim(id: number, agent: string, now: string): Promise<number> {
     return this.driver.exec(
-      `UPDATE tasks SET status = 'in_progress', assigned_to = ?, started_at = ? WHERE id = ? AND status = 'pending'`,
-      [agent, now, id],
+      `UPDATE tasks SET status = 'in_progress', assigned_to = ?, started_at = ?, updated_at = ? WHERE id = ? AND status = 'pending'`,
+      [agent, now, now, id],
     )
   }
 

@@ -5,6 +5,8 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { WebSocketServer } from 'ws'
 
+import { findFreePort } from './port-utils'
+
 import type { HarnessDB } from './db'
 import type { IncomingMessage } from 'node:http'
 import type { Socket } from 'node:net'
@@ -13,16 +15,16 @@ import type { Socket } from 'node:net'
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
-  '.js':   'application/javascript; charset=utf-8',
-  '.mjs':  'application/javascript; charset=utf-8',
-  '.css':  'text/css; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.mjs': 'application/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
-  '.svg':  'image/svg+xml',
-  '.png':  'image/png',
-  '.ico':  'image/x-icon',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.ico': 'image/x-icon',
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
-  '.ttf':  'font/ttf',
+  '.ttf': 'font/ttf',
 }
 
 function fileResponse(filePath: string): Response {
@@ -40,12 +42,12 @@ export interface DashboardServerResult {
   close: () => void
 }
 
-export function startDashboardServer(
+export async function startDashboardServer(
   db: HarnessDB,
   dbPath: string | null,
   staticPath: string,
-  port: number,
-): DashboardServerResult {
+  port: number
+): Promise<DashboardServerResult> {
   const app = new Hono()
   const { tasks, actions, stats } = db
 
@@ -103,7 +105,10 @@ export function startDashboardServer(
     await db.updateTask(id, updateParams)
 
     if (body.acceptance !== undefined && Array.isArray(body.acceptance)) {
-      await db.updateTaskAcceptance(id, body.acceptance.map((a: string) => a.trim()).filter(Boolean))
+      await db.updateTaskAcceptance(
+        id,
+        body.acceptance.map((a: string) => a.trim()).filter(Boolean)
+      )
     }
 
     const updated = await tasks.getById(id)
@@ -179,14 +184,22 @@ export function startDashboardServer(
     if (urlPath !== '/') {
       const candidate = join(staticPath, urlPath)
       if (existsSync(candidate)) {
-        try { return fileResponse(candidate) } catch { /* fall through */ }
+        try {
+          return fileResponse(candidate)
+        } catch {
+          /* fall through */
+        }
       }
     }
     return fileResponse(join(staticPath, 'index.html'))
   })
 
   // ─── Start HTTP server ────────────────────────────────────────────────────
-  const httpServer = serve({ fetch: app.fetch, port })
+  const resolvedPort = await findFreePort(port)
+  if (resolvedPort !== port) {
+    console.log(`Port ${port} in use, using ${resolvedPort}`)
+  }
+  const httpServer = serve({ fetch: app.fetch, port: resolvedPort })
 
   // ─── WebSocket ────────────────────────────────────────────────────────────
   const wss = new WebSocketServer({ noServer: true })
@@ -224,7 +237,7 @@ export function startDashboardServer(
   }
 
   return {
-    url: `http://localhost:${port}`,
+    url: `http://localhost:${resolvedPort}`,
     close: () => {
       clearTimeout(debounce)
       watcher?.close()

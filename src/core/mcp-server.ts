@@ -161,6 +161,18 @@ const TOOLS = [
     },
   },
   {
+    name: 'tasks.acceptance.get',
+    description:
+      'Given a taskId, returns all acceptance criteria for that task with their id, task_id, criterion text, and met status. Use the returned id values to call tasks.acceptance_update(criterionId).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        taskId: { type: 'number', description: 'Task ID' },
+      },
+      required: ['taskId'],
+    },
+  },
+  {
     name: 'tasks.add',
     description:
       'Create a new task in the harness. Use this when the user describes work in natural language. Infer slug, title, description, and acceptance criteria from the conversation. Ask for missing critical info before calling.',
@@ -365,6 +377,12 @@ async function dispatch(
       const criterionId = num(args, 'criterionId')
       await db.markAcceptanceMet(criterionId)
       return ok(JSON.stringify({ criterionId, met: true }))
+    }
+
+    case 'tasks.acceptance.get': {
+      const taskId = num(args, 'taskId')
+      const criteria = await db.getTaskAcceptance(taskId)
+      return ok(JSON.stringify(criteria, null, 2))
     }
 
     case 'actions.record_tool': {

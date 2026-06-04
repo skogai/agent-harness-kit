@@ -57,7 +57,7 @@ export function mergeClaudeSettingsJson(filePath: string): void {
 }
 
 // Merge MCP tool permissions into .claude/settings.local.json
-export const MCP_CLAUDE_PERMISSIONS = [
+export const MCP_CLAUDE_PERMISSIONS_LEAD = [
   'mcp__agent-harness-kit__actions_start',
   'mcp__agent-harness-kit__actions_write',
   'mcp__agent-harness-kit__actions_complete',
@@ -66,13 +66,73 @@ export const MCP_CLAUDE_PERMISSIONS = [
   'mcp__agent-harness-kit__actions_record_tool',
   'mcp__agent-harness-kit__tasks_get',
   'mcp__agent-harness-kit__tasks_claim',
-  'mcp__agent-harness-kit__tasks_update',
   'mcp__agent-harness-kit__tasks_add',
-  'mcp__agent-harness-kit__tasks_acceptance_update',
+  'mcp__agent-harness-kit__tasks_update',
   'mcp__agent-harness-kit__tasks_edit',
   'mcp__agent-harness-kit__tasks_archive',
   'mcp__agent-harness-kit__tasks_unarchive',
+  'mcp__agent-harness-kit__tasks_acceptance_get',
   'mcp__agent-harness-kit__docs_search',
+]
+
+export const MCP_CLAUDE_PERMISSIONS_EXPLORER = [
+  'mcp__agent-harness-kit__actions_start',
+  'mcp__agent-harness-kit__actions_write',
+  'mcp__agent-harness-kit__actions_complete',
+  'mcp__agent-harness-kit__actions_get',
+  'mcp__agent-harness-kit__actions_record_file',
+  'mcp__agent-harness-kit__actions_record_tool',
+  'mcp__agent-harness-kit__tasks_get',
+  'mcp__agent-harness-kit__tasks_claim',
+  'mcp__agent-harness-kit__tasks_acceptance_get',
+  'mcp__agent-harness-kit__docs_search',
+]
+
+export const MCP_CLAUDE_PERMISSIONS_BUILDER = [
+  'mcp__agent-harness-kit__actions_start',
+  'mcp__agent-harness-kit__actions_write',
+  'mcp__agent-harness-kit__actions_complete',
+  'mcp__agent-harness-kit__actions_get',
+  'mcp__agent-harness-kit__actions_record_file',
+  'mcp__agent-harness-kit__actions_record_tool',
+  'mcp__agent-harness-kit__tasks_get',
+  'mcp__agent-harness-kit__tasks_claim',
+  'mcp__agent-harness-kit__tasks_add',
+  'mcp__agent-harness-kit__tasks_update',
+  'mcp__agent-harness-kit__tasks_edit',
+  'mcp__agent-harness-kit__tasks_archive',
+  'mcp__agent-harness-kit__tasks_unarchive',
+  'mcp__agent-harness-kit__tasks_acceptance_get',
+  'mcp__agent-harness-kit__docs_search',
+]
+
+export const MCP_CLAUDE_PERMISSIONS_REVIEWER = [
+  'mcp__agent-harness-kit__actions_start',
+  'mcp__agent-harness-kit__actions_write',
+  'mcp__agent-harness-kit__actions_complete',
+  'mcp__agent-harness-kit__actions_get',
+  'mcp__agent-harness-kit__actions_record_file',
+  'mcp__agent-harness-kit__actions_record_tool',
+  'mcp__agent-harness-kit__tasks_get',
+  'mcp__agent-harness-kit__tasks_claim',
+  'mcp__agent-harness-kit__tasks_add',
+  'mcp__agent-harness-kit__tasks_update',
+  'mcp__agent-harness-kit__tasks_edit',
+  'mcp__agent-harness-kit__tasks_archive',
+  'mcp__agent-harness-kit__tasks_unarchive',
+  'mcp__agent-harness-kit__tasks_acceptance_update',
+  'mcp__agent-harness-kit__tasks_acceptance_get',
+  'mcp__agent-harness-kit__docs_search',
+]
+
+// Full union — used by mergeClaudeSettingsLocalJson for project-wide settings
+export const MCP_CLAUDE_PERMISSIONS = [
+  ...new Set([
+    ...MCP_CLAUDE_PERMISSIONS_LEAD,
+    ...MCP_CLAUDE_PERMISSIONS_EXPLORER,
+    ...MCP_CLAUDE_PERMISSIONS_BUILDER,
+    ...MCP_CLAUDE_PERMISSIONS_REVIEWER,
+  ]),
 ]
 
 export function mergeClaudeSettingsLocalJson(filePath: string): void {
