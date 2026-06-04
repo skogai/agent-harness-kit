@@ -38,6 +38,7 @@ tasks.get            [status]                               → list tasks (pend
 tasks.claim          id                                     → atomically claim a pending task
 tasks.update         id status                              → change task status
 tasks.acceptance.update criterionId                        → mark an acceptance criterion as met
+tasks.acceptance.get    taskId                             → list all acceptance criteria for a task with their ids and met status
 docs.search          query                                  → search ./docs for relevant content
 ```
 
