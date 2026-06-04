@@ -53,7 +53,7 @@ function lastUpdate(t: TaskSummary): string {
 
 function Tasks() {
   const [filter, setFilter] = useState<Filter>('all')
-  const [viewMode, setViewMode] = useStorage<ViewMode>('list' as ViewMode)
+  const [viewMode, setViewMode] = useStorage<ViewMode>('list' as ViewMode, 'tasks_view_mode')
   const [sortConfig, setSortConfig] = useState<SortConfig>({ field: null, dir: 'asc' })
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: qk.allTasks(true),
