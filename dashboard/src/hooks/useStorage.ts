@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 
-export const useStorage = <T = unknown | undefined>(initialValue: T) => {
-  const [storage, setStorage] = useState<T | undefined>(initialValue)
+export const useStorage = <T = unknown | undefined>(initialValue: T, storageKey: string) => {
+  const [value, setValue] = useState<T | undefined>(initialValue)
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.storageArea === localStorage) {
+      if (event.storageArea === localStorage && event.key === storageKey) {
         try {
           const newValue = event.newValue ? (JSON.parse(event.newValue) as T) : undefined
-          setStorage(newValue)
+          setValue(newValue)
         } catch {
           // ignore parse errors
         }
@@ -19,16 +19,28 @@ export const useStorage = <T = unknown | undefined>(initialValue: T) => {
     return () => {
       window.removeEventListener('storage', handleStorageChange)
     }
-  }, [])
+  }, [storageKey])
+
+  useEffect(() => {
+    try {
+      const storedValue = localStorage.getItem(storageKey)
+      if (storedValue !== null) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect
+        setValue(JSON.parse(storedValue) as T)
+      }
+    } catch {
+      // ignore parse errors
+    }
+  }, [storageKey])
 
   const set = (value: T) => {
-    setStorage(value)
+    setValue(value)
     if (value === undefined) {
-      localStorage.removeItem('app-storage')
+      localStorage.removeItem(storageKey)
     } else {
-      localStorage.setItem('app-storage', JSON.stringify(value))
+      localStorage.setItem(storageKey, JSON.stringify(value))
     }
   }
 
-  return [storage, set] as const
+  return [value, set] as const
 }
