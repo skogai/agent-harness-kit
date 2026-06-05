@@ -5,9 +5,10 @@ import {
   MCP_CLAUDE_PERMISSIONS_EXPLORER,
   MCP_CLAUDE_PERMISSIONS_BUILDER,
   MCP_CLAUDE_PERMISSIONS_REVIEWER,
+  MCP_CLAUDE_PERMISSIONS_CONSULTANT,
 } from './materializer/mcp-merge'
 
-export type AgentName = 'lead' | 'explorer' | 'builder' | 'reviewer'
+export type AgentName = 'lead' | 'explorer' | 'consultant' | 'builder' | 'reviewer'
 
 export interface AgentSyncResult {
   ok: boolean
@@ -21,10 +22,11 @@ export interface SyncCheckResult {
 }
 
 const CANONICAL: Record<AgentName, string[]> = {
-  lead: MCP_CLAUDE_PERMISSIONS_LEAD,
-  explorer: MCP_CLAUDE_PERMISSIONS_EXPLORER,
-  builder: MCP_CLAUDE_PERMISSIONS_BUILDER,
-  reviewer: MCP_CLAUDE_PERMISSIONS_REVIEWER,
+  lead: [...MCP_CLAUDE_PERMISSIONS_LEAD],
+  explorer: [...MCP_CLAUDE_PERMISSIONS_EXPLORER],
+  consultant: [...MCP_CLAUDE_PERMISSIONS_CONSULTANT],
+  builder: [...MCP_CLAUDE_PERMISSIONS_BUILDER],
+  reviewer: [...MCP_CLAUDE_PERMISSIONS_REVIEWER],
 }
 
 function parseToolsFromFrontmatter(content: string): string[] {
@@ -43,7 +45,7 @@ export function checkPermissionsSync(cwd: string): SyncCheckResult {
   const agents: Record<AgentName, AgentSyncResult> = {} as Record<AgentName, AgentSyncResult>
   let in_sync = true
 
-  for (const agent of ['lead', 'explorer', 'builder', 'reviewer'] as AgentName[]) {
+  for (const agent of ['lead', 'explorer', 'consultant', 'builder', 'reviewer'] as AgentName[]) {
     const filePath = join(cwd, '.claude', 'agents', `${agent}.md`)
     if (!existsSync(filePath)) {
       const missing = CANONICAL[agent]

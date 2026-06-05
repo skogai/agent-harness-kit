@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { Server } from '@modelcontextprotocol/sdk/server'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
@@ -252,6 +252,16 @@ const TOOLS = [
     description: 'Check whether the .claude/agents/*.md tool permission lists are in sync with the current canonical permission constants. Returns per-agent diff with missing and extra tools. Call this at session start to detect outdated agent files after an ahk upgrade.',
     inputSchema: { type: 'object', properties: {}, required: [] },
   },
+  {
+    name: 'deps.snapshot',
+    description: 'Snapshot current package.json dependencies to .harness/deps-lock.json',
+    inputSchema: { type: 'object' as const, properties: {}, required: [] },
+  },
+  {
+    name: 'deps.check',
+    description: 'Compare current package.json against .harness/deps-lock.json and report changes',
+    inputSchema: { type: 'object' as const, properties: {}, required: [] },
+  },
 ] as const
 
 // ─── Server ───────────────────────────────────────────────────────────────────
@@ -433,6 +443,76 @@ async function dispatch(
     case 'permissions.check': {
       const result = checkPermissionsSync(cwd)
       return ok(JSON.stringify(result, null, 2))
+    }
+
+    case 'deps.snapshot': {
+      const pkgPath = join(cwd, 'package.json')
+      if (!existsSync(pkgPath)) {
+        return ok('package.json not found in project root', true)
+      }
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
+        dependencies?: Record<string, string>
+        devDependencies?: Record<string, string>
+      }
+      const snapshot = {
+        capturedAt: new Date().toISOString(),
+        dependencies: pkg.dependencies ?? {},
+        devDependencies: pkg.devDependencies ?? {},
+      }
+      const harnessDir = join(cwd, '.harness')
+      mkdirSync(harnessDir, { recursive: true })
+      writeFileSync(join(harnessDir, 'deps-lock.json'), JSON.stringify(snapshot, null, 2), 'utf8')
+      return ok(JSON.stringify({ message: 'Snapshot saved to .harness/deps-lock.json', capturedAt: snapshot.capturedAt }))
+    }
+
+    case 'deps.check': {
+      const pkgPath = join(cwd, 'package.json')
+      const lockPath = join(cwd, '.harness', 'deps-lock.json')
+      if (!existsSync(pkgPath)) {
+        return ok('package.json not found in project root', true)
+      }
+      if (!existsSync(lockPath)) {
+        return ok(JSON.stringify({ status: 'no-snapshot', message: 'No deps-lock.json found. Run deps.snapshot first to establish a baseline.' }))
+      }
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
+        dependencies?: Record<string, string>
+        devDependencies?: Record<string, string>
+      }
+      const lock = JSON.parse(readFileSync(lockPath, 'utf8')) as {
+        capturedAt: string
+        dependencies: Record<string, string>
+        devDependencies: Record<string, string>
+      }
+      const current = { ...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {}) }
+      const previous = { ...(lock.dependencies ?? {}), ...(lock.devDependencies ?? {}) }
+
+      const added: string[] = []
+      const removed: string[] = []
+      const majorBumps: Array<{ name: string; from: string; to: string }> = []
+
+      for (const [name, version] of Object.entries(current)) {
+        if (!(name in previous)) {
+          added.push(`${name}@${version}`)
+        } else {
+          const prevMajor = parseInt(previous[name].replace(/^[\^~>=v]/, '').split('.')[0] ?? '0', 10)
+          const curMajor = parseInt(version.replace(/^[\^~>=v]/, '').split('.')[0] ?? '0', 10)
+          if (!isNaN(prevMajor) && !isNaN(curMajor) && curMajor > prevMajor) {
+            majorBumps.push({ name, from: previous[name], to: version })
+          }
+        }
+      }
+      for (const depName of Object.keys(previous)) {
+        if (!(depName in current)) {
+          removed.push(depName)
+        }
+      }
+
+      const significant = added.length > 0 || removed.length > 0 || majorBumps.length > 0
+      const advisory = significant
+        ? 'Significant dependency changes detected. Consider running `pnpx autoskills` (or `npx autoskills` if pnpm is unavailable) to refresh agent skills. Clearing stale skills before re-running is recommended.'
+        : 'No significant dependency changes detected.'
+
+      return ok(JSON.stringify({ significant, added, removed, majorBumps, advisory, snapshotDate: lock.capturedAt }))
     }
 
     default:
