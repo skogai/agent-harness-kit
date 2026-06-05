@@ -7,6 +7,7 @@ import { mergeClaudeMcpJson, mergeClaudeSettingsJson, mergeClaudeSettingsLocalJs
 import { appendGitignore, slugify, writeAgentFile } from './scaffold-utils'
 import {
   agentBuilder,
+  agentConsultant,
   agentExplorer,
   agentLead,
   agentReviewer,
@@ -52,6 +53,7 @@ export class ClaudeCodeMaterializer implements Materializer {
     const writablePaths = (config.agents.builder.writablePaths ?? []).join(', ')
     writeAgentFile(cwd, '.claude/agents/lead.md', translateFrontmatterForClaudeCode(agentLead({ projectName }), 'lead'))
     writeAgentFile(cwd, '.claude/agents/explorer.md', translateFrontmatterForClaudeCode(agentExplorer({ projectName, allowedPaths }), 'explorer'))
+    writeAgentFile(cwd, '.claude/agents/consultant.md', translateFrontmatterForClaudeCode(agentConsultant({ projectName }), 'consultant'))
     writeAgentFile(cwd, '.claude/agents/builder.md', translateFrontmatterForClaudeCode(agentBuilder({ projectName, writablePaths }), 'builder'))
     writeAgentFile(cwd, '.claude/agents/reviewer.md', translateFrontmatterForClaudeCode(agentReviewer({ projectName }), 'reviewer'))
 
@@ -83,6 +85,7 @@ export class ClaudeCodeMaterializer implements Materializer {
     const writablePaths = (config.agents.builder.writablePaths ?? []).join(', ')
     writeAgentFile(cwd, '.claude/agents/lead.md', translateFrontmatterForClaudeCode(agentLead({ projectName }), 'lead'))
     writeAgentFile(cwd, '.claude/agents/explorer.md', translateFrontmatterForClaudeCode(agentExplorer({ projectName, allowedPaths }), 'explorer'))
+    writeAgentFile(cwd, '.claude/agents/consultant.md', translateFrontmatterForClaudeCode(agentConsultant({ projectName }), 'consultant'))
     writeAgentFile(cwd, '.claude/agents/builder.md', translateFrontmatterForClaudeCode(agentBuilder({ projectName, writablePaths }), 'builder'))
     writeAgentFile(cwd, '.claude/agents/reviewer.md', translateFrontmatterForClaudeCode(agentReviewer({ projectName }), 'reviewer'))
 

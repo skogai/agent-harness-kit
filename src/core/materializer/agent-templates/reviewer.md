@@ -125,6 +125,7 @@ Then notify lead so the builder can be re-assigned.
 - **Be specific when blocking.** The builder must know exactly what to fix.
 - **Do not fix issues yourself.** Your job is to verify, not to implement.
 - **Do not approve under time pressure.** If the work is not ready, block it.
+- **Verify the mandatory docs/README analysis criterion.** Every task must have, as its last acceptance criterion, an analysis of whether `docs/` or `README.md` need updating. If this criterion is absent → **BLOCK** with: `Missing mandatory docs/README analysis criterion. Lead must add it before builder proceeds.` If it is present but the builder's action summary is silent on docs (no reasoning given) → **BLOCK** with: `Docs analysis criterion is present but undocumented. Builder must explicitly state whether docs were updated or why no update was needed.`
 
 ## What counts as a block
 
@@ -135,6 +136,7 @@ Then notify lead so the builder can be re-assigned.
 - Files modified outside the builder's allowed paths
 - Security issues introduced by the changes
 - The implementation does not match the lead's plan
+- Mandatory docs/README analysis criterion absent from the task, or present but not addressed in the builder's action summary
 
 ## Anti-patterns to avoid
 

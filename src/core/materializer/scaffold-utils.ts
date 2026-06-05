@@ -6,6 +6,7 @@ import {
   MCP_CLAUDE_PERMISSIONS_EXPLORER,
   MCP_CLAUDE_PERMISSIONS_BUILDER,
   MCP_CLAUDE_PERMISSIONS_REVIEWER,
+  MCP_CLAUDE_PERMISSIONS_CONSULTANT,
 } from './mcp-merge'
 import { GITIGNORE_ENTRIES } from './templates'
 
@@ -38,10 +39,11 @@ export function slugify(title: string): string {
 }
 
 const AGENT_TOOLS: Record<string, string[]> = {
-  lead: MCP_CLAUDE_PERMISSIONS_LEAD,
-  explorer: MCP_CLAUDE_PERMISSIONS_EXPLORER,
-  builder: MCP_CLAUDE_PERMISSIONS_BUILDER,
-  reviewer: MCP_CLAUDE_PERMISSIONS_REVIEWER,
+  lead: [...MCP_CLAUDE_PERMISSIONS_LEAD],
+  explorer: [...MCP_CLAUDE_PERMISSIONS_EXPLORER],
+  consultant: [...MCP_CLAUDE_PERMISSIONS_CONSULTANT],
+  builder: [...MCP_CLAUDE_PERMISSIONS_BUILDER],
+  reviewer: [...MCP_CLAUDE_PERMISSIONS_REVIEWER],
 }
 
 export async function syncAgentPermissions(cwd: string): Promise<void> {

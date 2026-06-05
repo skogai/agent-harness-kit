@@ -75,7 +75,7 @@ If you touched 5 files and made 12 tool calls, there must be 5 `actions.record_f
 actions.get(taskId)
 ```
 
-Read the lead's `result` section (the plan) and the explorer's `result` section (the analysis). Do not start until you understand both.
+Read ALL previous actions via `actions.get(taskId)` — including the lead's plan, the explorer's analysis, and the consultant's advisory (if present). Do not rely on the lead summary alone. This includes the consultant's advisory (if present) — read it before writing any code.
 
 ### 2. Register your action
 

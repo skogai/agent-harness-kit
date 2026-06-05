@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import {
   MCP_CLAUDE_PERMISSIONS,
   MCP_CLAUDE_PERMISSIONS_BUILDER,
+  MCP_CLAUDE_PERMISSIONS_CONSULTANT,
   MCP_CLAUDE_PERMISSIONS_EXPLORER,
   MCP_CLAUDE_PERMISSIONS_LEAD,
   MCP_CLAUDE_PERMISSIONS_REVIEWER,
@@ -22,7 +23,7 @@ const TEMPLATES_DIR = join(__dirname, 'agent-templates')
  * Variables are replaced using a simple {{key}} pattern.
  */
 function loadAgentTemplate(
-  name: 'lead' | 'explorer' | 'builder' | 'reviewer',
+  name: 'lead' | 'explorer' | 'consultant' | 'builder' | 'reviewer',
   vars: Record<string, string> = {}
 ): string {
   const raw = readFileSync(join(TEMPLATES_DIR, `${name}.md`), 'utf8')
@@ -301,6 +302,10 @@ export function agentBuilder(vars: { projectName: string; writablePaths: string 
   return loadAgentTemplate('builder', vars)
 }
 
+export function agentConsultant(vars: { projectName: string }): string {
+  return loadAgentTemplate('consultant', vars)
+}
+
 export function agentReviewer(vars: { projectName: string }): string {
   return loadAgentTemplate('reviewer', vars)
 }
@@ -396,13 +401,14 @@ export function agentReviewerToml(vars: { projectName: string }): string {
  */
 export function translateFrontmatterForClaudeCode(
   md: string,
-  agentName: 'lead' | 'explorer' | 'builder' | 'reviewer'
+  agentName: 'lead' | 'explorer' | 'consultant' | 'builder' | 'reviewer'
 ): string {
   const permissionsMap: Record<string, string[]> = {
-    lead: MCP_CLAUDE_PERMISSIONS_LEAD,
-    explorer: MCP_CLAUDE_PERMISSIONS_EXPLORER,
-    builder: MCP_CLAUDE_PERMISSIONS_BUILDER,
-    reviewer: MCP_CLAUDE_PERMISSIONS_REVIEWER,
+    lead: [...MCP_CLAUDE_PERMISSIONS_LEAD],
+    explorer: [...MCP_CLAUDE_PERMISSIONS_EXPLORER],
+    consultant: [...MCP_CLAUDE_PERMISSIONS_CONSULTANT],
+    builder: [...MCP_CLAUDE_PERMISSIONS_BUILDER],
+    reviewer: [...MCP_CLAUDE_PERMISSIONS_REVIEWER],
   }
   const permissions = permissionsMap[agentName] ?? MCP_CLAUDE_PERMISSIONS
   const mcpLines = permissions.map((t) => `  - ${t}`).join('\n')

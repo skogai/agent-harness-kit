@@ -125,6 +125,18 @@ export const MCP_CLAUDE_PERMISSIONS_REVIEWER = [
   'mcp__agent-harness-kit__docs_search',
 ]
 
+export const MCP_CLAUDE_PERMISSIONS_CONSULTANT = [
+  'mcp__agent-harness-kit__actions_start',
+  'mcp__agent-harness-kit__actions_write',
+  'mcp__agent-harness-kit__actions_complete',
+  'mcp__agent-harness-kit__actions_get',
+  'mcp__agent-harness-kit__actions_record_file',
+  'mcp__agent-harness-kit__actions_record_tool',
+  'mcp__agent-harness-kit__tasks_get',
+  'mcp__agent-harness-kit__deps_snapshot',
+  'mcp__agent-harness-kit__deps_check',
+] as const
+
 // Full union — used by mergeClaudeSettingsLocalJson for project-wide settings
 export const MCP_CLAUDE_PERMISSIONS = [
   ...new Set([
@@ -132,6 +144,7 @@ export const MCP_CLAUDE_PERMISSIONS = [
     ...MCP_CLAUDE_PERMISSIONS_EXPLORER,
     ...MCP_CLAUDE_PERMISSIONS_BUILDER,
     ...MCP_CLAUDE_PERMISSIONS_REVIEWER,
+    ...MCP_CLAUDE_PERMISSIONS_CONSULTANT,
   ]),
 ]
 

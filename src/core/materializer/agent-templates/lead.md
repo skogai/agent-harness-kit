@@ -91,6 +91,13 @@ Then call `permissions.check` — if `in_sync: false`, inform the user before pr
 > "Your agent permissions are outdated. Run `ahk build --sync` to update, or I can guide you."
 Wait for the user to acknowledge before continuing the session.
 
+Then run deps tracking:
+```
+deps.snapshot   → save current dependency state (creates .harness/deps-lock.json if missing)
+deps.check      → returns diff vs. last snapshot
+```
+Save the `deps.check` result — you'll use it in step 7 to decide whether to invoke the consultant.
+
 Then check session state via MCP:
 
 ```
@@ -139,6 +146,9 @@ Think through:
 - What are the acceptance criteria the reviewer will check?
 - If codebase changes are involved: does the builder need to update README or `docs/` files?
 - Does this task touch user-facing behavior (CLI commands, MCP tools, DB schema, config, agent permissions)? If yes, add an acceptance criterion: `README.md and/or docs/ updated to reflect the change`
+- **Always append, as the LAST acceptance criterion for every task, this mandatory criterion:**
+  > `Docs/README analysis: [describe whether docs/, README.md, or other documentation files need to reflect this change and what specifically — or explicitly state 'no update needed' with brief reasoning]`
+  The analysis is non-negotiable. The conclusion can be "no update needed" but the reasoning must be stated. The reviewer will block if this criterion is absent or if the builder's action summary is silent on docs.
 
 Record it:
 
@@ -156,12 +166,19 @@ actions.complete(actionId, 'Plan defined — delegating to explorer')
 
 ### 7. Delegate in order
 
-Invoke: **Explorer** → **Builder** → **Reviewer**
+Invoke: **Explorer** → **Consultant** (conditional) → **Builder** → **Reviewer**
 
 After each agent completes, read their output:
 ```
 actions.get(taskId)   → read the latest completed action and its sections
 ```
+
+**Invoke the Consultant when ANY of these are true:**
+- `deps.check` returned `significant: true`
+- `.harness/deps-lock.json` did not exist before this session (first task)
+- The task description mentions `package.json`, dependencies, or config files
+
+**Skip the Consultant** for routine feature/bug tasks where deps are unchanged.
 
 ### 8. Handle a Reviewer block
 
