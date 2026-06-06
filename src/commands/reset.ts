@@ -11,7 +11,7 @@ interface ResetOptions {
 }
 
 // Map of agent names to their .md filenames
-const AGENT_MD_FILES = ['lead', 'explorer', 'builder', 'reviewer']
+const AGENT_MD_FILES = ['lead', 'explorer', 'consultant', 'builder', 'reviewer']
 
 async function resetAgentMds(cwd: string, provider: 'claude-code' | 'opencode'): Promise<void> {
   const agentDir = provider === 'claude-code' ? '.claude/agents' : '.opencode/agents'

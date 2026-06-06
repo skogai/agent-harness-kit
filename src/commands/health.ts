@@ -40,7 +40,7 @@ export async function runHealth(cwd: string): Promise<void> {
   // ─── [checking agents] ──────────────────────────────────────────────────────
   const providerFiles = getProviderHealthFiles(config.provider)
   const agentsDir = providerFiles.agentsDir
-  const agentNames = ['lead', 'explorer', 'builder', 'reviewer']
+  const agentNames = ['lead', 'explorer', 'consultant', 'builder', 'reviewer']
 
   const agentsLabelWidth = '[checking agents] '.length
   for (let i = 0; i < agentNames.length; i++) {
