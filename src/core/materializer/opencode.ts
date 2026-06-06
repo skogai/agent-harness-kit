@@ -3,7 +3,7 @@ import { join, resolve } from 'node:path'
 
 import { mergeOpencodeJson } from './mcp-merge'
 import { appendGitignore, slugify, writeAgentFile } from './scaffold-utils'
-import { agentBuilder, agentExplorer, agentLead, agentReviewer, agentsMd, featureListJson, HEALTH_SH } from './templates'
+import { agentBuilder, agentExplorer, agentLead, agentReviewer, agentsMd, featureListJson, HEALTH_SH, translateFrontmatterForOpenCode } from './templates'
 
 import type { Materializer } from './index'
 import type { HarnessConfig, Provider, ScaffoldOptions } from '@/types'
@@ -42,10 +42,10 @@ export class OpenCodeMaterializer implements Materializer {
     const projectName = config.project.name
     const allowedPaths = (config.agents.explorer.allowedPaths ?? []).join(', ')
     const writablePaths = (config.agents.builder.writablePaths ?? []).join(', ')
-    writeAgentFile(cwd, '.opencode/agents/lead.md', agentLead({ projectName }))
-    writeAgentFile(cwd, '.opencode/agents/explorer.md', agentExplorer({ projectName, allowedPaths }))
-    writeAgentFile(cwd, '.opencode/agents/builder.md', agentBuilder({ projectName, writablePaths }))
-    writeAgentFile(cwd, '.opencode/agents/reviewer.md', agentReviewer({ projectName }))
+    writeAgentFile(cwd, '.opencode/agents/lead.md', translateFrontmatterForOpenCode(agentLead({ projectName })))
+    writeAgentFile(cwd, '.opencode/agents/explorer.md', translateFrontmatterForOpenCode(agentExplorer({ projectName, allowedPaths })))
+    writeAgentFile(cwd, '.opencode/agents/builder.md', translateFrontmatterForOpenCode(agentBuilder({ projectName, writablePaths })))
+    writeAgentFile(cwd, '.opencode/agents/reviewer.md', translateFrontmatterForOpenCode(agentReviewer({ projectName })))
 
     // opencode.json — MERGE, never overwrite whole file
     mergeOpencodeJson(join(cwd, 'opencode.json'), config.tools.mcp.port)
@@ -65,10 +65,10 @@ export class OpenCodeMaterializer implements Materializer {
     const projectName = config.project.name
     const allowedPaths = (config.agents.explorer.allowedPaths ?? []).join(', ')
     const writablePaths = (config.agents.builder.writablePaths ?? []).join(', ')
-    writeAgentFile(cwd, '.opencode/agents/lead.md', agentLead({ projectName }))
-    writeAgentFile(cwd, '.opencode/agents/explorer.md', agentExplorer({ projectName, allowedPaths }))
-    writeAgentFile(cwd, '.opencode/agents/builder.md', agentBuilder({ projectName, writablePaths }))
-    writeAgentFile(cwd, '.opencode/agents/reviewer.md', agentReviewer({ projectName }))
+    writeAgentFile(cwd, '.opencode/agents/lead.md', translateFrontmatterForOpenCode(agentLead({ projectName })))
+    writeAgentFile(cwd, '.opencode/agents/explorer.md', translateFrontmatterForOpenCode(agentExplorer({ projectName, allowedPaths })))
+    writeAgentFile(cwd, '.opencode/agents/builder.md', translateFrontmatterForOpenCode(agentBuilder({ projectName, writablePaths })))
+    writeAgentFile(cwd, '.opencode/agents/reviewer.md', translateFrontmatterForOpenCode(agentReviewer({ projectName })))
 
     mergeOpencodeJson(join(cwd, 'opencode.json'), config.tools.mcp.port)
   }

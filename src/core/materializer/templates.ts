@@ -421,6 +421,22 @@ export function translateFrontmatterForClaudeCode(
   })
 }
 
+// ─── OpenCode frontmatter translation ────────────────────────────────────────
+
+/**
+ * Converts the `tools:` YAML list in a template's frontmatter to the
+ * dictionary format expected by OpenCode (e.g. `read: true`, `bash: true`).
+ *
+ * Only transforms the tools: block — all other frontmatter fields and
+ * body content are left exactly as-is.
+ */
+export function translateFrontmatterForOpenCode(md: string): string {
+  return md.replace(/(tools:\n(?:  - [^\n]+\n)+)/, (match) => {
+    const tools = [...match.matchAll(/  - ([^\n]+)/g)].map((m) => m[1].trim())
+    return 'tools:\n' + tools.map((t) => `  ${t.toLocaleLowerCase()}: true`).join('\n') + '\n'
+  })
+}
+
 // ─── .gitignore additions ─────────────────────────────────────────────────────
 
 export const GITIGNORE_ENTRIES = `

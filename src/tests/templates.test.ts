@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { describe, test } from 'node:test'
 
 import { mergeClaudeMcpJson, mergeClaudeSettingsLocalJson, mergeOpencodeJson } from '@/core/materializer/mcp-merge'
-import { featureListJson } from '@/core/materializer/templates'
+import { featureListJson, translateFrontmatterForOpenCode } from '@/core/materializer/templates'
 
 const TMP = join(import.meta.dirname, '../../.tmp-templates')
 
@@ -128,5 +128,31 @@ describe('featureListJson', () => {
     const parsed = JSON.parse(result)
     assert.equal(parsed[0].slug, 'foo')
     assert.deepEqual(parsed[0].acceptance, ['Must work'])
+  })
+})
+
+describe('translateFrontmatterForOpenCode', () => {
+  test('converts tools list to dict format', () => {
+    const input = `---\nname: lead\ntools:\n  - Read\n  - Bash\n---\n\n# Body\n`
+    const result = translateFrontmatterForOpenCode(input)
+    assert.ok(result.includes('tools:\n  read: true\n  bash: true\n'), `Expected dict format, got:\n${result}`)
+    assert.ok(!result.includes('- Read'), 'Should not contain list format')
+  })
+
+  test('converts all four builder tools', () => {
+    const input = `---\nname: builder\ntools:\n  - Read\n  - Write\n  - Edit\n  - Bash\n---\n\n# Body\n`
+    const result = translateFrontmatterForOpenCode(input)
+    assert.ok(result.includes('  read: true'))
+    assert.ok(result.includes('  write: true'))
+    assert.ok(result.includes('  edit: true'))
+    assert.ok(result.includes('  bash: true'))
+  })
+
+  test('leaves other frontmatter fields and body unchanged', () => {
+    const input = `---\nname: explorer\ndescription: some desc\ntools:\n  - Read\n---\n\n# Body content\n`
+    const result = translateFrontmatterForOpenCode(input)
+    assert.ok(result.includes('name: explorer'))
+    assert.ok(result.includes('description: some desc'))
+    assert.ok(result.includes('# Body content'))
   })
 })
