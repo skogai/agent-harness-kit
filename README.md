@@ -161,7 +161,9 @@ ahk init --name "my-app" --provider claude-code --docs ./docs --tasks local
 ahk init --name "my-app" --provider codex-cli   --docs ./docs --tasks local
 ```
 
-Run this once per project. Safe to re-run — it will not overwrite files you've customized.
+Run this once per project. If the project is already initialized, the command prints an 'already initialized' message with suggested next-step commands (`ahk build`, `ahk build --sync`, `ahk reset`, `ahk serve`) and exits without overwriting anything.
+
+The config file extension is chosen automatically: `.ts` if a `tsconfig.json` is present, `.mjs` for ESM-only projects (`"type": "module"` in `package.json`), or `.cjs` otherwise.
 
 ---
 
@@ -339,7 +341,7 @@ ahk export --sql --output dump.sql       # SQL dump to file
 
 ```
 your-project/
-├── agent-harness-kit.config.ts
+├── agent-harness-kit.config.{ts|mjs|cjs}
 ├── AGENTS.md
 ├── CLAUDE.md
 ├── health.sh
@@ -361,7 +363,7 @@ your-project/
 
 ```
 your-project/
-├── agent-harness-kit.config.ts
+├── agent-harness-kit.config.{ts|mjs|cjs}
 ├── AGENTS.md
 ├── health.sh
 ├── opencode.json                  ← MCP server + default_agent + compaction config
@@ -378,7 +380,7 @@ your-project/
 
 ```
 your-project/
-├── agent-harness-kit.config.ts
+├── agent-harness-kit.config.{ts|mjs|cjs}
 ├── AGENTS.md
 ├── health.sh
 ├── .harness/

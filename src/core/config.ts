@@ -8,6 +8,7 @@ const CONFIG_NAMES = [
   'agent-harness-kit.config.ts',
   'agent-harness-kit.config',
   'agent-harness-kit.config.mjs',
+  'agent-harness-kit.config.cjs',
 ]
 
 export function findConfigFile(cwd: string): string | null {

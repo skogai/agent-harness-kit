@@ -22,6 +22,17 @@ export function readProjectNameFromPackageJson(cwd: string): string | null {
   }
 }
 
+export function detectConfigExtension(cwd: string): 'ts' | 'mjs' | 'cjs' {
+  try {
+    if (existsSync(join(cwd, 'tsconfig.json'))) return 'ts'
+    const pkgPath = join(cwd, 'package.json')
+    if (!existsSync(pkgPath)) return 'cjs'
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
+    if (pkg?.type === 'module') return 'mjs'
+  } catch {}
+  return 'cjs'
+}
+
 export function applyConfigDefaults(params: {
   name: string
   description: string

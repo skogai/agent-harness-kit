@@ -3,16 +3,18 @@ import { join } from 'node:path'
 import * as p from '@clack/prompts'
 import pc from 'picocolors'
 
+import { findConfigFile } from '@/core/config'
 import { openDB } from '@/core/db'
 import { getMaterializer } from '@/core/materializer/index'
 import { slugify } from '@/core/materializer/scaffold-utils'
-import { configTs } from '@/core/materializer/templates'
+import { configTs, configMjs, configCjs } from '@/core/materializer/templates'
 import { initDescriptionSchema, initDocsSchema, initNameSchema } from '@/schema/init'
 import { taskDescriptionSchema, taskTitleSchema } from '@/schema/task'
 import { cliFormWithRetry } from '@/utils/form'
 
 import {
   applyConfigDefaults,
+  detectConfigExtension,
   drawBox,
   printWelcomeMessage,
   readProjectNameFromPackageJson,
@@ -28,6 +30,29 @@ interface InitOptions {
 }
 
 export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
+  const existingConfig = findConfigFile(cwd)
+  if (existingConfig) {
+    console.log(
+      pc.yellow('⚠') +
+        ' ' +
+        pc.bold('Project already initialized.') +
+        pc.dim(` (${existingConfig})`)
+    )
+    console.log()
+    console.log(pc.dim('Suggested next steps:'))
+    console.log(
+      '  ' +
+        pc.cyan('ahk build') +
+        pc.dim('         — re-sync agent files after updating the library')
+    )
+    console.log('  ' + pc.cyan('ahk build --sync') + pc.dim('  — also sync agent permissions'))
+    console.log(
+      '  ' + pc.cyan('ahk reset') + pc.dim('         — wipe and re-initialize from scratch')
+    )
+    console.log('  ' + pc.cyan('ahk dashboard') + pc.dim('         — open the harness dashboard'))
+    process.exit(0)
+  }
+
   const detectedName = flags.name ?? readProjectNameFromPackageJson(cwd)
   const projectName = detectedName || 'my-project'
   printWelcomeMessage(projectName)
@@ -165,6 +190,7 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
   }
 
   // ─── Scaffold ─────────────────────────────────────────────────────────────
+  let configExt: 'ts' | 'mjs' | 'cjs' = 'ts'
   const spinner = p.spinner()
   spinner.start('Scaffolding...')
 
@@ -174,7 +200,10 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
 
     const installDir = cwd
 
-    const configContent = configTs({
+    configExt = detectConfigExtension(cwd)
+    const configFileName = `agent-harness-kit.config.${configExt}`
+    const templateFn = configExt === 'ts' ? configTs : configExt === 'mjs' ? configMjs : configCjs
+    const configContent = templateFn({
       name,
       description,
       provider,
@@ -182,7 +211,7 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
       tasksAdapter,
       port: config.tools.mcp.port,
     })
-    writeFileSync(join(installDir, 'agent-harness-kit.config.ts'), configContent, 'utf8')
+    writeFileSync(join(installDir, configFileName), configContent, 'utf8')
 
     // Create .harness dir
     mkdirSync(join(installDir, config.storage.dir), { recursive: true })
@@ -219,7 +248,7 @@ export async function runInit(cwd: string, flags: InitOptions): Promise<void> {
   const mcpFile = provider === 'claude-code' ? '.claude/mcp.json' : './opencode.json'
 
   console.log('')
-  console.log(pc.green('✓ agent-harness-kit.config.ts'))
+  console.log(pc.green(`✓ agent-harness-kit.config.${configExt}`))
   console.log(pc.green('✓ AGENTS.md'))
   console.log(pc.green('✓ health.sh'))
   console.log(pc.green('✓ .harness/harness.db'))
