@@ -78,5 +78,9 @@ export class OpenCodeMaterializer implements Materializer {
   async migrate(config: HarnessConfig, _to: Provider, _cwd: string): Promise<void> {
     void config
   }
+
+  async syncPermissions(_cwd: string): Promise<void> {
+    console.log('  Permissions sync not needed for opencode — skipping')
+  }
 }
 

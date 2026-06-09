@@ -8,6 +8,7 @@ export interface Materializer {
   scaffold(config: HarnessConfig, opts: ScaffoldOptions): Promise<void>
   build(config: HarnessConfig, cwd: string): Promise<void>
   migrate(config: HarnessConfig, to: Provider, cwd: string): Promise<void>
+  syncPermissions(cwd: string): Promise<void>
 }
 
 export function getMaterializer(provider: Provider): Materializer {

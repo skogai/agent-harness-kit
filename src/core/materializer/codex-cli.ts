@@ -93,4 +93,8 @@ export class CodexCliMaterializer implements Materializer {
   async migrate(config: HarnessConfig, _to: Provider, _cwd: string): Promise<void> {
     void config
   }
+
+  async syncPermissions(_cwd: string): Promise<void> {
+    console.log('  Permissions sync not needed for codex-cli — skipping')
+  }
 }

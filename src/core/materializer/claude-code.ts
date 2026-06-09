@@ -1,9 +1,18 @@
-import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join, resolve } from 'path'
 
 import { write } from '@/utils/file'
 
-import { mergeClaudeMcpJson, mergeClaudeSettingsJson, mergeClaudeSettingsLocalJson } from './mcp-merge'
+import {
+  mergeClaudeMcpJson,
+  mergeClaudeSettingsJson,
+  mergeClaudeSettingsLocalJson,
+  MCP_CLAUDE_PERMISSIONS_LEAD,
+  MCP_CLAUDE_PERMISSIONS_EXPLORER,
+  MCP_CLAUDE_PERMISSIONS_CONSULTANT,
+  MCP_CLAUDE_PERMISSIONS_BUILDER,
+  MCP_CLAUDE_PERMISSIONS_REVIEWER,
+} from './mcp-merge'
 import { appendGitignore, slugify, writeAgentFile } from './scaffold-utils'
 import {
   agentBuilder,
@@ -98,5 +107,42 @@ export class ClaudeCodeMaterializer implements Materializer {
   async migrate(config: HarnessConfig, _to: Provider, _cwd: string): Promise<void> {
     void config
     // Migration from claude-code is handled by the target materializer
+  }
+
+  async syncPermissions(cwd: string): Promise<void> {
+    const AGENT_TOOLS: Record<string, string[]> = {
+      lead: [...MCP_CLAUDE_PERMISSIONS_LEAD],
+      explorer: [...MCP_CLAUDE_PERMISSIONS_EXPLORER],
+      consultant: [...MCP_CLAUDE_PERMISSIONS_CONSULTANT],
+      builder: [...MCP_CLAUDE_PERMISSIONS_BUILDER],
+      reviewer: [...MCP_CLAUDE_PERMISSIONS_REVIEWER],
+    }
+
+    for (const [agent, tools] of Object.entries(AGENT_TOOLS)) {
+      const filePath = join(cwd, '.claude', 'agents', `${agent}.md`)
+      if (!existsSync(filePath)) {
+        console.log(`  ${agent}.md not found — skipping`)
+        continue
+      }
+      const content = readFileSync(filePath, 'utf-8')
+      // Replace mcp__ lines in the tools: block while preserving native tools (Read/Write/Bash/Task)
+      const updated = content.replace(
+        /(tools:\n)((?:  - [^\n]+\n)*)/m,
+        (_match, header, toolsSection) => {
+          const nativeLines = toolsSection
+            .split('\n')
+            .filter((line: string) => line.trim() && !line.includes('mcp__'))
+          const nativeSection = nativeLines.length ? nativeLines.join('\n') + '\n' : ''
+          const mcpSection = tools.map((t) => `  - ${t}`).join('\n') + '\n'
+          return header + nativeSection + mcpSection
+        }
+      )
+      if (updated === content) {
+        console.log(`  ${agent}.md already in sync`)
+      } else {
+        writeFileSync(filePath, updated, 'utf-8')
+        console.log(`  ${agent}.md updated`)
+      }
+    }
   }
 }
