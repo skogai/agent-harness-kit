@@ -1,12 +1,15 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+
 import {
-  MCP_CLAUDE_PERMISSIONS_LEAD,
-  MCP_CLAUDE_PERMISSIONS_EXPLORER,
   MCP_CLAUDE_PERMISSIONS_BUILDER,
-  MCP_CLAUDE_PERMISSIONS_REVIEWER,
   MCP_CLAUDE_PERMISSIONS_CONSULTANT,
+  MCP_CLAUDE_PERMISSIONS_EXPLORER,
+  MCP_CLAUDE_PERMISSIONS_LEAD,
+  MCP_CLAUDE_PERMISSIONS_REVIEWER,
 } from './materializer/mcp-merge'
+
+import type { HarnessConfig } from '@/types'
 
 export type AgentName = 'lead' | 'explorer' | 'consultant' | 'builder' | 'reviewer'
 
@@ -18,7 +21,7 @@ export interface AgentSyncResult {
 
 export interface SyncCheckResult {
   in_sync: boolean
-  agents: Record<AgentName, AgentSyncResult>
+  agents?: Record<AgentName, AgentSyncResult>
 }
 
 const CANONICAL: Record<AgentName, string[]> = {
@@ -37,11 +40,15 @@ function parseToolsFromFrontmatter(content: string): string[] {
   if (!toolsMatch) return []
   return toolsMatch[1]
     .split('\n')
-    .map(l => l.trim().replace(/^- /, ''))
-    .filter(l => l.startsWith('mcp__'))
+    .map((l) => l.trim().replace(/^- /, ''))
+    .filter((l) => l.startsWith('mcp__'))
 }
 
-export function checkPermissionsSync(cwd: string): SyncCheckResult {
+export function checkPermissionsSync(cwd: string, config: HarnessConfig): SyncCheckResult {
+  if (config.provider !== 'claude-code') {
+    return { in_sync: true }
+  }
+
   const agents: Record<AgentName, AgentSyncResult> = {} as Record<AgentName, AgentSyncResult>
   let in_sync = true
 
@@ -56,8 +63,8 @@ export function checkPermissionsSync(cwd: string): SyncCheckResult {
     const content = readFileSync(filePath, 'utf-8')
     const installed = parseToolsFromFrontmatter(content)
     const canonical = CANONICAL[agent]
-    const missing = canonical.filter(t => !installed.includes(t))
-    const extra = installed.filter(t => !canonical.includes(t))
+    const missing = canonical.filter((t) => !installed.includes(t))
+    const extra = installed.filter((t) => !canonical.includes(t))
     const ok = missing.length === 0 && extra.length === 0
     if (!ok) in_sync = false
     agents[agent] = { ok, missing, extra }

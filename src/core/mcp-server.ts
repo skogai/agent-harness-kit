@@ -44,7 +44,8 @@ const TOOLS = [
         actionId: { type: 'string', description: 'UUID returned by actions.start' },
         sectionType: {
           type: 'string',
-          description: 'Section name: result | tools_used | blockers | next_steps | <custom>. Do NOT use files_modified to track files — it is stored as plain text only. Use actions.record_file instead.',
+          description:
+            'Section name: result | tools_used | blockers | next_steps | <custom>. Do NOT use files_modified to track files — it is stored as plain text only. Use actions.record_file instead.',
         },
         content: { type: 'string', description: 'Content for this section' },
       },
@@ -156,7 +157,10 @@ const TOOLS = [
     inputSchema: {
       type: 'object',
       properties: {
-        criterionId: { type: 'number', description: 'The id of the acceptance criterion to mark as met' },
+        criterionId: {
+          type: 'number',
+          description: 'The id of the acceptance criterion to mark as met',
+        },
       },
       required: ['criterionId'],
     },
@@ -181,7 +185,11 @@ const TOOLS = [
       type: 'object',
       properties: {
         title: { type: 'string', description: 'Short human-readable title for the task' },
-        slug: { type: 'string', description: 'URL-safe identifier (lowercase, hyphens). Auto-derived from title if omitted.' },
+        slug: {
+          type: 'string',
+          description:
+            'URL-safe identifier (lowercase, hyphens). Auto-derived from title if omitted.',
+        },
         description: { type: 'string', description: 'Longer description of the task goal' },
         acceptance: {
           type: 'array',
@@ -200,8 +208,14 @@ const TOOLS = [
       type: 'object',
       properties: {
         actionId: { type: 'string', description: 'UUID returned by actions.start' },
-        toolName: { type: 'string', description: 'Name of the tool that was called (e.g. Read, Bash, Edit)' },
-        argsJson: { type: 'string', description: 'Optional JSON string of the arguments passed to the tool' },
+        toolName: {
+          type: 'string',
+          description: 'Name of the tool that was called (e.g. Read, Bash, Edit)',
+        },
+        argsJson: {
+          type: 'string',
+          description: 'Optional JSON string of the arguments passed to the tool',
+        },
         resultSummary: { type: 'string', description: 'Optional short summary of the tool result' },
       },
       required: ['actionId', 'toolName'],
@@ -209,7 +223,8 @@ const TOOLS = [
   },
   {
     name: 'tasks.edit',
-    description: 'Edit an existing task (title, description, acceptance criteria). Omitted fields keep their current values.',
+    description:
+      'Edit an existing task (title, description, acceptance criteria). Omitted fields keep their current values.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -227,7 +242,8 @@ const TOOLS = [
   },
   {
     name: 'tasks.archive',
-    description: 'Archive a task. Archived tasks are hidden from default views (CLI and dashboard).',
+    description:
+      'Archive a task. Archived tasks are hidden from default views (CLI and dashboard).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -249,7 +265,8 @@ const TOOLS = [
   },
   {
     name: 'permissions.check',
-    description: 'Check whether the .claude/agents/*.md tool permission lists are in sync with the current canonical permission constants. Returns per-agent diff with missing and extra tools. Call this at session start to detect outdated agent files after an ahk upgrade.',
+    description:
+      'Check whether the .claude/agents/*.md tool permission lists are in sync with the current canonical permission constants. Returns per-agent diff with missing and extra tools. Call this at session start to detect outdated agent files after an ahk upgrade.',
     inputSchema: { type: 'object', properties: {}, required: [] },
   },
   {
@@ -282,7 +299,7 @@ export async function startMcpServer(config: HarnessConfig, cwd: string): Promis
     const a = (args ?? {}) as Record<string, unknown>
 
     try {
-      const result = await dispatch(name, a, db, docsPath, cwd)
+      const result = await dispatch(name, a, db, docsPath, cwd, config)
       return result
     } catch (err) {
       return ok(`Error: ${err instanceof Error ? err.message : String(err)}`, true)
@@ -300,7 +317,8 @@ async function dispatch(
   args: Record<string, unknown>,
   db: HarnessDB,
   docsPath: string,
-  cwd: string
+  cwd: string,
+  config: HarnessConfig
 ): Promise<CallToolResult> {
   switch (name) {
     case 'actions.start': {
@@ -322,7 +340,9 @@ async function dispatch(
       const actionId = str(args, 'actionId')
       const summary = str(args, 'summary')
       const action = await db.completeAction(actionId, summary)
-      return ok(JSON.stringify({ actionId, status: action.status, completedAt: action.completed_at }))
+      return ok(
+        JSON.stringify({ actionId, status: action.status, completedAt: action.completed_at })
+      )
     }
 
     case 'actions.get': {
@@ -332,7 +352,7 @@ async function dispatch(
         actions.map(async (a) => ({
           ...a,
           sections: await db.getActionSections(a.id),
-        })),
+        }))
       )
       return ok(JSON.stringify(full, null, 2))
     }
@@ -420,7 +440,10 @@ async function dispatch(
       const task = await db.getTaskById(id)
       if (!task) return ok(JSON.stringify({ error: 'Task not found', taskId: id }), true)
 
-      await db.updateTask(id, { title, description: description !== undefined ? description : undefined })
+      await db.updateTask(id, {
+        title,
+        description: description !== undefined ? description : undefined,
+      })
       if (acceptance !== undefined && acceptance !== null) {
         await db.updateTaskAcceptance(id, acceptance)
       }
@@ -441,7 +464,7 @@ async function dispatch(
     }
 
     case 'permissions.check': {
-      const result = checkPermissionsSync(cwd)
+      const result = checkPermissionsSync(cwd, config)
       return ok(JSON.stringify(result, null, 2))
     }
 
@@ -462,7 +485,12 @@ async function dispatch(
       const harnessDir = join(cwd, '.harness')
       mkdirSync(harnessDir, { recursive: true })
       writeFileSync(join(harnessDir, 'deps-lock.json'), JSON.stringify(snapshot, null, 2), 'utf8')
-      return ok(JSON.stringify({ message: 'Snapshot saved to .harness/deps-lock.json', capturedAt: snapshot.capturedAt }))
+      return ok(
+        JSON.stringify({
+          message: 'Snapshot saved to .harness/deps-lock.json',
+          capturedAt: snapshot.capturedAt,
+        })
+      )
     }
 
     case 'deps.check': {
@@ -472,7 +500,12 @@ async function dispatch(
         return ok('package.json not found in project root', true)
       }
       if (!existsSync(lockPath)) {
-        return ok(JSON.stringify({ status: 'no-snapshot', message: 'No deps-lock.json found. Run deps.snapshot first to establish a baseline.' }))
+        return ok(
+          JSON.stringify({
+            status: 'no-snapshot',
+            message: 'No deps-lock.json found. Run deps.snapshot first to establish a baseline.',
+          })
+        )
       }
       const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
         dependencies?: Record<string, string>
@@ -494,7 +527,10 @@ async function dispatch(
         if (!(name in previous)) {
           added.push(`${name}@${version}`)
         } else {
-          const prevMajor = parseInt(previous[name].replace(/^[\^~>=v]/, '').split('.')[0] ?? '0', 10)
+          const prevMajor = parseInt(
+            previous[name].replace(/^[\^~>=v]/, '').split('.')[0] ?? '0',
+            10
+          )
           const curMajor = parseInt(version.replace(/^[\^~>=v]/, '').split('.')[0] ?? '0', 10)
           if (!isNaN(prevMajor) && !isNaN(curMajor) && curMajor > prevMajor) {
             majorBumps.push({ name, from: previous[name], to: version })
@@ -512,7 +548,16 @@ async function dispatch(
         ? 'Significant dependency changes detected. Consider running `pnpx autoskills` (or `npx autoskills` if pnpm is unavailable) to refresh agent skills. Clearing stale skills before re-running is recommended.'
         : 'No significant dependency changes detected.'
 
-      return ok(JSON.stringify({ significant, added, removed, majorBumps, advisory, snapshotDate: lock.capturedAt }))
+      return ok(
+        JSON.stringify({
+          significant,
+          added,
+          removed,
+          majorBumps,
+          advisory,
+          snapshotDate: lock.capturedAt,
+        })
+      )
     }
 
     default:
@@ -542,7 +587,11 @@ function searchDocs(docsPath: string, query: string, maxResults = 10): DocSnippe
         for (let i = 0; i < lines.length; i++) {
           const lower = lines[i].toLowerCase()
           if (terms.every((t) => lower.includes(t))) {
-            results.push({ file: file.replace(docsPath + '/', ''), line: i + 1, text: lines[i].trim() })
+            results.push({
+              file: file.replace(docsPath + '/', ''),
+              line: i + 1,
+              text: lines[i].trim(),
+            })
             if (results.length >= maxResults) break
           }
         }
