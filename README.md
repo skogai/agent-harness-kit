@@ -174,7 +174,7 @@ Regenerates `AGENTS.md` and provider-specific files from your `agent-harness-kit
 ```bash
 ahk build
 ahk build --watch    # watch mode: rebuilds automatically on config changes
-ahk build --sync     # sync tools: frontmatter in .claude/agents/*.md to match current permission constants
+ahk build --sync     # sync tools: frontmatter in agent files to match current permission constants (claude-code only; no-op for opencode/codex-cli)
 ```
 
 ---
