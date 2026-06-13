@@ -3,7 +3,7 @@ import { mkdirSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 
-import { type HarnessDB,openDB } from '@/core/db'
+import { type HarnessDB, openDB } from '@/core/db'
 
 import type { HarnessConfig } from '@/types'
 
@@ -23,7 +23,13 @@ const config: HarnessConfig = {
   storage: {
     dir: '.harness',
     tasks: { adapter: 'local' },
-    sections: { toolsUsed: true, filesModified: true, result: true, blockers: true, nextSteps: false },
+    sections: {
+      toolsUsed: true,
+      filesModified: true,
+      result: true,
+      blockers: true,
+      nextSteps: false,
+    },
     markdownFallback: { enabled: false, path: join(TMP, 'current.md') },
   },
   health: { scriptPath: './health.sh', required: false },
@@ -244,7 +250,10 @@ describe('HarnessDB', () => {
 
     const tasks = await db.getTasks()
     assert.equal(tasks.length, 2)
-    assert.equal(tasks.find((t) => t.slug === 'will-archive'), undefined)
+    assert.equal(
+      tasks.find((t) => t.slug === 'will-archive'),
+      undefined
+    )
   })
 
   test('getTasks includes archived when includeArchived=true', async () => {
@@ -278,6 +287,9 @@ describe('HarnessDB', () => {
 
     const archived = await db.getArchivedTasks()
     assert.equal(archived.length, 2)
-    assert.equal(archived.find((t) => t.slug === 'active-e'), undefined)
+    assert.equal(
+      archived.find((t) => t.slug === 'active-e'),
+      undefined
+    )
   })
 })

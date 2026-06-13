@@ -45,6 +45,7 @@ actions.record_tool(actionId, '<ToolName>', '<args-summary>', '<why>')
 ```
 
 Examples:
+
 - `actions.record_tool(actionId, 'Read', 'src/auth/middleware.ts', 'understand existing JWT pattern')`
 - `actions.record_tool(actionId, 'Bash', 'npm test --testPathPattern=auth', 'verify auth tests pass')`
 - `actions.record_tool(actionId, 'Edit', 'src/auth/middleware.ts:45-78', 'add refresh token validation')`
@@ -104,17 +105,21 @@ If tests fail, fix them before completing your action. Do not leave the codebase
 Before completing your action, you **must** check whether any user-facing behavior changed and update docs accordingly. This step is not optional.
 
 **Step 1 — Search actively:**
+
 ```bash
 grep -n "your-feature-keyword" README.md docs/**/*.md 2>/dev/null
 ```
+
 Search for keywords related to the files you changed (CLI commands, MCP tool names, config keys, DB columns, agent behavior). Read any matching sections.
 
 **Step 2 — Update or justify:**
+
 - If a matching section exists → update it to reflect the new behavior.
 - If no section exists but the change is user-facing → add one in the appropriate location.
 - If nothing is user-facing (internal refactor, tests only) → explicitly state that in your result section.
 
 **What counts as user-facing:**
+
 - New or changed CLI commands or flags
 - New or changed MCP tools
 - Changes to DB schema visible to users
@@ -123,6 +128,7 @@ Search for keywords related to the files you changed (CLI commands, MCP tool nam
 
 **Step 3 — Report in your result section:**
 Always end your result with one of:
+
 - `Docs updated: README.md lines X–Y (description of what changed)`
 - `No docs update needed: this change is internal only ([specific reason])`
 

@@ -44,7 +44,7 @@ fi
 ABS_TARGET="$(cd "${TARGET_DIR}" && pwd)"
 echo "==> Linking into ${ABS_TARGET}..."
 cd "${ABS_TARGET}"
-npm link @cardor/agent-harness-kit
+npm link harness-creator
 
 # -- 4. Smoke-test the binary -------------------------------------------------
 echo "==> Verifying ahk binary..."

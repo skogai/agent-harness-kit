@@ -42,7 +42,10 @@ program
   .command('build')
   .description('Regenerate AGENTS.md and provider files from agent-harness-kit.config.ts')
   .option('--watch', 'Rebuild on config changes')
-  .option('--sync', 'Sync tools: frontmatter in existing .claude/agents/*.md to match current permission constants')
+  .option(
+    '--sync',
+    'Sync tools: frontmatter in existing .claude/agents/*.md to match current permission constants'
+  )
   .action(async (opts) => {
     await runBuild(cwd, opts)
   })
@@ -147,7 +150,6 @@ program
   .action(async (opts) => {
     await runExport(cwd, opts)
   })
-
 
 // ─── reset ────────────────────────────────────────────────────────────────────
 program

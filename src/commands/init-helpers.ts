@@ -86,7 +86,6 @@ function stripAnsi(str: string): string {
   return str.replace(/\x1B\[[0-9;]*m/g, '')
 }
 
-
 /** Draw a bordered box matching printUpdateMessage() style */
 export function drawBox(lines: string[]): void {
   // Calculate max content width (excluding ANSI codes)

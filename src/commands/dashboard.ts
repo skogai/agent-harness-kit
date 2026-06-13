@@ -35,5 +35,5 @@ export async function runDashboard(cwd: string, opts: DashboardOptions): Promise
   })
 
   // Keep process alive until SIGINT
-  await new Promise<void>(() => { })
+  await new Promise<void>(() => {})
 }

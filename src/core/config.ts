@@ -26,7 +26,7 @@ export async function loadConfig(cwd: string): Promise<HarnessConfig> {
   }
 
   const jiti = createJiti(import.meta.url)
-  const mod = await jiti.import(configPath) as { default?: HarnessConfig } | HarnessConfig
+  const mod = (await jiti.import(configPath)) as { default?: HarnessConfig } | HarnessConfig
   const config = (mod as { default?: HarnessConfig }).default ?? (mod as HarnessConfig)
 
   if (!config || typeof config !== 'object') {

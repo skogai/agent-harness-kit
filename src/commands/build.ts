@@ -29,7 +29,7 @@ export async function runBuild(cwd: string, opts: BuildOptions): Promise<void> {
       }
     })
     // Keep process alive
-    await new Promise(() => { })
+    await new Promise(() => {})
   }
 }
 

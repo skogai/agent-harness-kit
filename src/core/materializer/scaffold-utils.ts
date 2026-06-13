@@ -30,4 +30,3 @@ export function slugify(title: string): string {
     .replace(/^-+|-+$/g, '')
     .slice(0, 64)
 }
-

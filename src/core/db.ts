@@ -109,7 +109,10 @@ export class HarnessDB {
     return this.tasks.markAcceptanceMet(criterionId)
   }
 
-  async updateTask(id: number, params: { title?: string; description?: string | null; slug?: string }): Promise<TaskRow> {
+  async updateTask(
+    id: number,
+    params: { title?: string; description?: string | null; slug?: string }
+  ): Promise<TaskRow> {
     await this.tasks.update(id, params)
     await this.regenerateCurrentMd()
     return (await this.tasks.getById(id))!
@@ -184,7 +187,7 @@ export class HarnessDB {
     actionId: string,
     filePath: string,
     operation: ActionFileRow['operation'],
-    notes?: string,
+    notes?: string
   ): Promise<void> {
     return this.actions.addFile(actionId, filePath, operation, notes ?? null)
   }
@@ -193,7 +196,7 @@ export class HarnessDB {
     actionId: string,
     toolName: string,
     argsJson?: string,
-    resultSummary?: string,
+    resultSummary?: string
   ): Promise<void> {
     const now = new Date().toISOString()
     return this.actions.addTool(actionId, toolName, argsJson ?? null, resultSummary ?? null, now)
@@ -274,7 +277,11 @@ export class HarnessDB {
 
   // ─── Export helpers ───────────────────────────────────────────────────────
 
-  async exportJson(): Promise<{ tasks: TaskRow[]; actions: ActionRow[]; sections: ActionSectionRow[] }> {
+  async exportJson(): Promise<{
+    tasks: TaskRow[]
+    actions: ActionRow[]
+    sections: ActionSectionRow[]
+  }> {
     return {
       tasks: await this.tasks.getAll(undefined, true),
       actions: await this.actions.getAll(),
@@ -293,7 +300,7 @@ export class HarnessDB {
   // ─── feature_list.json sync ───────────────────────────────────────────────
 
   async syncFromFeatureList(
-    seeds: { slug: string; title: string; description?: string; acceptance?: string[] }[],
+    seeds: { slug: string; title: string; description?: string; acceptance?: string[] }[]
   ): Promise<{ added: number; skipped: number }> {
     let added = 0
     let skipped = 0
@@ -317,7 +324,7 @@ export class HarnessDB {
         description: t.description ?? undefined,
         acceptance: (await this.tasks.getAcceptance(t.id)).map((a) => a.criterion),
         status: t.status,
-      })),
+      }))
     )
     const path = join(resolve(cwd), this.config.storage.dir, 'feature_list.json')
     mkdirSync(dirname(path), { recursive: true })

@@ -3,13 +3,26 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, test } from 'node:test'
 
-import { mergeClaudeMcpJson, mergeClaudeSettingsLocalJson, mergeOpencodeJson } from '@/core/materializer/mcp-merge'
-import { configCjs, configTs, featureListJson, translateFrontmatterForOpenCode } from '@/core/materializer/templates'
+import {
+  mergeClaudeMcpJson,
+  mergeClaudeSettingsLocalJson,
+  mergeOpencodeJson,
+} from '@/core/materializer/mcp-merge'
+import {
+  configCjs,
+  configTs,
+  featureListJson,
+  translateFrontmatterForOpenCode,
+} from '@/core/materializer/templates'
 
 const TMP = join(import.meta.dirname, '../../.tmp-templates')
 
-function setup() { mkdirSync(TMP, { recursive: true }) }
-function teardown() { rmSync(TMP, { recursive: true, force: true }) }
+function setup() {
+  mkdirSync(TMP, { recursive: true })
+}
+function teardown() {
+  rmSync(TMP, { recursive: true, force: true })
+}
 
 describe('mergeClaudeMcpJson', () => {
   test('creates file when it does not exist', () => {
@@ -54,7 +67,7 @@ describe('mergeOpencodeJson', () => {
   test('preserves existing mcp entries', () => {
     setup()
     const path = join(TMP, 'opencode2.json')
-    const initial = { mcp: { 'other': { type: 'local', command: ['bar'] } } }
+    const initial = { mcp: { other: { type: 'local', command: ['bar'] } } }
     writeFileSync(path, JSON.stringify(initial))
     mergeOpencodeJson(path, 3456)
     const parsed = JSON.parse(readFileSync(path, 'utf8'))
@@ -135,7 +148,10 @@ describe('translateFrontmatterForOpenCode', () => {
   test('converts tools list to dict format', () => {
     const input = `---\nname: lead\ntools:\n  - Read\n  - Bash\n---\n\n# Body\n`
     const result = translateFrontmatterForOpenCode(input)
-    assert.ok(result.includes('tools:\n  read: true\n  bash: true\n'), `Expected dict format, got:\n${result}`)
+    assert.ok(
+      result.includes('tools:\n  read: true\n  bash: true\n'),
+      `Expected dict format, got:\n${result}`
+    )
     assert.ok(!result.includes('- Read'), 'Should not contain list format')
   })
 
@@ -171,21 +187,36 @@ describe('configTs', () => {
     const desc = "it's a playground"
     const out = configTs({ ...base, description: desc })
     assert.ok(out.includes(JSON.stringify(desc)), 'description not safely encoded')
-    assert.doesNotThrow(() => new Function(out.replace(/^import .+$/gm, '//$&').replace(/^export default /m, 'const _cfg = ')))
+    assert.doesNotThrow(
+      () =>
+        new Function(
+          out.replace(/^import .+$/gm, '//$&').replace(/^export default /m, 'const _cfg = ')
+        )
+    )
   })
 
   test('description with double quotes produces valid JS', () => {
     const desc = 'a "test" project'
     const out = configTs({ ...base, description: desc })
     assert.ok(out.includes(JSON.stringify(desc)))
-    assert.doesNotThrow(() => new Function(out.replace(/^import .+$/gm, '//$&').replace(/^export default /m, 'const _cfg = ')))
+    assert.doesNotThrow(
+      () =>
+        new Function(
+          out.replace(/^import .+$/gm, '//$&').replace(/^export default /m, 'const _cfg = ')
+        )
+    )
   })
 
   test('description with both apostrophe and double quotes produces valid JS', () => {
     const desc = `it's a "test" project`
     const out = configTs({ ...base, description: desc })
     assert.ok(out.includes(JSON.stringify(desc)))
-    assert.doesNotThrow(() => new Function(out.replace(/^import .+$/gm, '//$&').replace(/^export default /m, 'const _cfg = ')))
+    assert.doesNotThrow(
+      () =>
+        new Function(
+          out.replace(/^import .+$/gm, '//$&').replace(/^export default /m, 'const _cfg = ')
+        )
+    )
   })
 })
 

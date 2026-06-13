@@ -43,6 +43,7 @@ actions.get(taskId)   → read explorer's analysis and lead's plan
 ### 2. Analyse
 
 Read the files the explorer mapped. Focus on:
+
 - Existing patterns the builder must follow for consistency
 - Known gotchas or constraints in the affected code
 - Any risks introduced by the proposed change (breaking changes, perf, security)
@@ -56,6 +57,7 @@ actions.write(actionId, 'result', '<your structured advisory>')
 ```
 
 Structure your advisory with clear headings:
+
 - **Patterns to follow** — what existing conventions apply
 - **Risks & warnings** — what could go wrong
 - **Best practices** — what the builder should keep in mind
