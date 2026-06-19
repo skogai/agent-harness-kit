@@ -19,6 +19,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    allowedHosts: 'https://3000.skogix.se',
     port: 5173,
     proxy: {
       '/api': 'http://localhost:4242',
