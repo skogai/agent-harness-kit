@@ -89,15 +89,15 @@ export class ClaudeCodeMaterializer implements Materializer {
     write('AGENTS.md', agentsMd(config))
     write('CLAUDE.md', claudeMd(config))
 
-    // Agent files: skip if customized, write if missing
+    // Agent files: always regenerate (build must update existing files)
     const projectName = config.project.name
     const allowedPaths = (config.agents.explorer.allowedPaths ?? []).join(', ')
     const writablePaths = (config.agents.builder.writablePaths ?? []).join(', ')
-    writeAgentFile(cwd, '.claude/agents/lead.md', translateFrontmatterForClaudeCode(agentLead({ projectName }), 'lead'))
-    writeAgentFile(cwd, '.claude/agents/explorer.md', translateFrontmatterForClaudeCode(agentExplorer({ projectName, allowedPaths }), 'explorer'))
-    writeAgentFile(cwd, '.claude/agents/consultant.md', translateFrontmatterForClaudeCode(agentConsultant({ projectName }), 'consultant'))
-    writeAgentFile(cwd, '.claude/agents/builder.md', translateFrontmatterForClaudeCode(agentBuilder({ projectName, writablePaths }), 'builder'))
-    writeAgentFile(cwd, '.claude/agents/reviewer.md', translateFrontmatterForClaudeCode(agentReviewer({ projectName }), 'reviewer'))
+    write('.claude/agents/lead.md', translateFrontmatterForClaudeCode(agentLead({ projectName }), 'lead'))
+    write('.claude/agents/explorer.md', translateFrontmatterForClaudeCode(agentExplorer({ projectName, allowedPaths }), 'explorer'))
+    write('.claude/agents/consultant.md', translateFrontmatterForClaudeCode(agentConsultant({ projectName }), 'consultant'))
+    write('.claude/agents/builder.md', translateFrontmatterForClaudeCode(agentBuilder({ projectName, writablePaths }), 'builder'))
+    write('.claude/agents/reviewer.md', translateFrontmatterForClaudeCode(agentReviewer({ projectName }), 'reviewer'))
 
     // MCP config: always merge
     mergeClaudeMcpJson(join(cwd, '.mcp.json'), config.tools.mcp.port)

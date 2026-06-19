@@ -189,7 +189,7 @@ function getProviderSkillsDir(provider: string): string {
 function checkSkills(cwd: string, provider: string): SkillStatus[] {
   const skillsDir = getProviderSkillsDir(provider)
   // Skills are in src/core/materializer/skills/ — at runtime dist/core/materializer/skills/
-  const skillSourceBase = join(__dirname, 'materializer', 'skills')
+  const skillSourceBase = join(__dirname, 'skills')
 
   return SKILL_NAMES.map((name) => {
     const livePath = join(cwd, skillsDir, name, 'SKILL.md')
