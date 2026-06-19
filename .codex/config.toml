@@ -1,0 +1,8 @@
+[mcp_servers.agent-harness-kit]
+command = "npx"
+args = [
+    "ahk",
+    "serve",
+    "--port",
+    "3742",
+]
