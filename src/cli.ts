@@ -2,6 +2,7 @@ import { Command } from 'commander'
 
 import { runBuild } from '@/commands/build'
 import { runDashboard } from '@/commands/dashboard'
+import { runDoctor } from '@/commands/doctor'
 import { runExport } from '@/commands/export'
 import { runHealth } from '@/commands/health'
 import { runInit } from '@/commands/init'
@@ -157,6 +158,14 @@ program
   .option('--provider <claude-code|opencode>', 'Reset agent MD files for specified provider')
   .action(async (opts) => {
     await runReset(cwd, opts)
+  })
+
+// ─── doctor ───────────────────────────────────────────────────────────────────
+program
+  .command('doctor')
+  .description('Check lib version, agent files, and harness skills sync status')
+  .action(async () => {
+    await runDoctor(cwd)
   })
 
 program.hook('postAction', async () => {

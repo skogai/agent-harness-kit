@@ -36,6 +36,7 @@ npx ahk init
     - [`ahk dashboard`](#ahk-dashboard)
     - [`ahk status`](#ahk-status)
     - [`ahk health`](#ahk-health)
+    - [`ahk doctor`](#ahk-doctor)
     - [`ahk sync`](#ahk-sync)
     - [`ahk serve`](#ahk-serve)
     - [`ahk task add`](#ahk-task-add)
@@ -224,6 +225,24 @@ Runs `health.sh` and reports the result. Exit 0 = healthy, exit 1 = something is
 ```bash
 ahk health
 ```
+
+---
+
+### `ahk doctor`
+
+Checks that the installed lib version, agent files, and harness skills are all in sync.
+
+```bash
+ahk doctor
+```
+
+Reports three categories:
+
+- **lib version** — compares installed version against the latest on npm. Shows `[✓]` if up to date, `[!]` if an update is available, or `[~]` if the registry could not be reached.
+- **agent files** — reads each agent file on disk and compares against what `ahk build` would generate. Reports `[!]` with the file name if outdated.
+- **harness skills** — checks that `ahk-ask`, `ahk-consultant`, and `ahk-triage` skills exist and match the bundled source. Reports `[!]` if missing or outdated.
+
+Run `ahk build` to fix any reported issues.
 
 ---
 
@@ -596,6 +615,7 @@ The harness exposes these tools via MCP. Agents use them instead of reading file
 | `tasks.acceptance_get`    | `taskId`                                        | Returns all acceptance criteria for a task with their `id`, `task_id`, `criterion` text, and `met` status. Use the returned `id` values with `tasks.acceptance.update` |
 | `deps.snapshot`           | _(none)_                                        | Snapshot current `package.json` dependencies to `.harness/deps-lock.json`                                                                                              |
 | `deps.check`              | _(none)_                                        | Compare current `package.json` against `.harness/deps-lock.json`. Returns `{ significant, added, removed, majorBumps, advisory }`                                      |
+| `ahk.doctor`              | _(none)_                                        | Check lib version, agent files, and harness skills sync status. Returns `{ lib: { current, latest, outdated }, agents: { outdated, upToDate }, skills: { missing, outdated, ok } }` |
 
 ---
 
@@ -628,6 +648,7 @@ Each agent role has a scoped set of MCP tools enforced through the agent definit
 | `permissions.check`           |  ✅  |    ✅    |     ❌     |   ✅    |    ✅    |
 | `deps.snapshot`               |  ❌  |    ❌    |     ✅     |   ❌    |    ❌    |
 | `deps.check`                  |  ❌  |    ❌    |     ✅     |   ❌    |    ❌    |
+| `ahk.doctor`                  |  ✅  |    ✅    |     ✅     |   ✅    |    ✅    |
 
 **explorer** is read-only for task state — can query but cannot mutate status or mark criteria.  
 **reviewer** is the only role that can mark acceptance criteria as met (`tasks.acceptance.update`).  
