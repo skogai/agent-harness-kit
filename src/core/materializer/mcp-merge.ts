@@ -73,6 +73,7 @@ export const MCP_CLAUDE_PERMISSIONS_LEAD = [
   'mcp__agent-harness-kit__tasks_unarchive',
   'mcp__agent-harness-kit__tasks_acceptance_get',
   'mcp__agent-harness-kit__docs_search',
+  'mcp__agent-harness-kit__ahk_doctor',
 ]
 
 export const MCP_CLAUDE_PERMISSIONS_EXPLORER = [
@@ -86,6 +87,7 @@ export const MCP_CLAUDE_PERMISSIONS_EXPLORER = [
   'mcp__agent-harness-kit__tasks_claim',
   'mcp__agent-harness-kit__tasks_acceptance_get',
   'mcp__agent-harness-kit__docs_search',
+  'mcp__agent-harness-kit__ahk_doctor',
 ]
 
 export const MCP_CLAUDE_PERMISSIONS_BUILDER = [
@@ -104,6 +106,7 @@ export const MCP_CLAUDE_PERMISSIONS_BUILDER = [
   'mcp__agent-harness-kit__tasks_unarchive',
   'mcp__agent-harness-kit__tasks_acceptance_get',
   'mcp__agent-harness-kit__docs_search',
+  'mcp__agent-harness-kit__ahk_doctor',
 ]
 
 export const MCP_CLAUDE_PERMISSIONS_REVIEWER = [
@@ -123,6 +126,7 @@ export const MCP_CLAUDE_PERMISSIONS_REVIEWER = [
   'mcp__agent-harness-kit__tasks_acceptance_update',
   'mcp__agent-harness-kit__tasks_acceptance_get',
   'mcp__agent-harness-kit__docs_search',
+  'mcp__agent-harness-kit__ahk_doctor',
 ]
 
 export const MCP_CLAUDE_PERMISSIONS_CONSULTANT = [
@@ -138,6 +142,7 @@ export const MCP_CLAUDE_PERMISSIONS_CONSULTANT = [
   'mcp__agent-harness-kit__deps_snapshot',
   'mcp__agent-harness-kit__deps_check',
   'mcp__agent-harness-kit__docs_search',
+  'mcp__agent-harness-kit__ahk_doctor',
 ] as const
 
 // Full union — used by mergeClaudeSettingsLocalJson for project-wide settings

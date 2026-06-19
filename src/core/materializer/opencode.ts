@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 import { mergeOpencodeJson } from './mcp-merge'
-import { appendGitignore, slugify, writeAgentFile } from './scaffold-utils'
+import { appendGitignore, slugify, writeAgentFile, writeSkills } from './scaffold-utils'
 import { agentBuilder, agentConsultant, agentExplorer, agentLead, agentReviewer, agentsMd, featureListJson, HEALTH_SH, translateFrontmatterForOpenCode } from './templates'
 
 import type { Materializer } from './index'
@@ -52,6 +52,7 @@ export class OpenCodeMaterializer implements Materializer {
     mergeOpencodeJson(join(cwd, 'opencode.json'), config.tools.mcp.port)
 
     appendGitignore(cwd)
+    writeSkills(cwd, '.opencode/skills')
   }
 
   async build(config: HarnessConfig, cwd: string): Promise<void> {
@@ -73,6 +74,7 @@ export class OpenCodeMaterializer implements Materializer {
     writeAgentFile(cwd, '.opencode/agents/reviewer.md', translateFrontmatterForOpenCode(agentReviewer({ projectName })))
 
     mergeOpencodeJson(join(cwd, 'opencode.json'), config.tools.mcp.port)
+    writeSkills(cwd, '.opencode/skills')
   }
 
   async migrate(config: HarnessConfig, _to: Provider, _cwd: string): Promise<void> {

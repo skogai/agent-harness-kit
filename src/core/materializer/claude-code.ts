@@ -13,7 +13,7 @@ import {
   MCP_CLAUDE_PERMISSIONS_BUILDER,
   MCP_CLAUDE_PERMISSIONS_REVIEWER,
 } from './mcp-merge'
-import { appendGitignore, slugify, writeAgentFile } from './scaffold-utils'
+import { appendGitignore, slugify, writeAgentFile, writeSkills } from './scaffold-utils'
 import {
   agentBuilder,
   agentConsultant,
@@ -75,6 +75,7 @@ export class ClaudeCodeMaterializer implements Materializer {
 
     // .gitignore additions
     appendGitignore(cwd)
+    writeSkills(cwd, '.claude/skills')
   }
 
   async build(config: HarnessConfig, cwd: string): Promise<void> {
@@ -102,6 +103,7 @@ export class ClaudeCodeMaterializer implements Materializer {
     mergeClaudeMcpJson(join(cwd, '.mcp.json'), config.tools.mcp.port)
     mergeClaudeSettingsJson(join(cwd, '.claude/settings.json'))
     mergeClaudeSettingsLocalJson(join(cwd, '.claude/settings.local.json'))
+    writeSkills(cwd, '.claude/skills')
   }
 
   async migrate(config: HarnessConfig, _to: Provider, _cwd: string): Promise<void> {

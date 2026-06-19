@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 import { mergeCodexConfigToml } from './mcp-merge'
-import { appendGitignore, slugify, writeAgentFile } from './scaffold-utils'
+import { appendGitignore, slugify, writeAgentFile, writeSkills } from './scaffold-utils'
 import {
   agentBuilderToml,
   agentConsultantToml,
@@ -65,6 +65,7 @@ export class CodexCliMaterializer implements Materializer {
     mergeCodexConfigToml(join(cwd, '.codex/config.toml'), config.tools.mcp.port)
 
     appendGitignore(cwd)
+    writeSkills(cwd, '.agents/skills')
   }
 
   async build(config: HarnessConfig, cwd: string): Promise<void> {
@@ -88,6 +89,7 @@ export class CodexCliMaterializer implements Materializer {
     writeAgentFile(cwd, '.codex/agents/default.toml', agentLeadAsDefaultToml({ projectName }))
 
     mergeCodexConfigToml(join(cwd, '.codex/config.toml'), config.tools.mcp.port)
+    writeSkills(cwd, '.agents/skills')
   }
 
   async migrate(config: HarnessConfig, _to: Provider, _cwd: string): Promise<void> {
