@@ -8,9 +8,9 @@ description: >
 tools:
   - Read
   - Write
-  - Task
   - Edit
   - Bash
+  - Task
   - mcp__agent-harness-kit__actions_start
   - mcp__agent-harness-kit__actions_write
   - mcp__agent-harness-kit__actions_complete
@@ -26,6 +26,7 @@ tools:
   - mcp__agent-harness-kit__tasks_unarchive
   - mcp__agent-harness-kit__tasks_acceptance_get
   - mcp__agent-harness-kit__docs_search
+  - mcp__agent-harness-kit__ahk_doctor
 ---
 
 # Builder Agent — @cardor/agent-harness-kit
@@ -61,7 +62,6 @@ actions.record_tool(actionId, '<ToolName>', '<args-summary>', '<why>')
 ```
 
 Examples:
-
 - `actions.record_tool(actionId, 'Read', 'src/auth/middleware.ts', 'understand existing JWT pattern')`
 - `actions.record_tool(actionId, 'Bash', 'npm test --testPathPattern=auth', 'verify auth tests pass')`
 - `actions.record_tool(actionId, 'Edit', 'src/auth/middleware.ts:45-78', 'add refresh token validation')`
@@ -92,7 +92,7 @@ If you touched 5 files and made 12 tool calls, there must be 5 `actions.record_f
 actions.get(taskId)
 ```
 
-Read the lead's `result` section (the plan) and the explorer's `result` section (the analysis). Do not start until you understand both.
+Read ALL previous actions via `actions.get(taskId)` — including the lead's plan, the explorer's analysis, and the consultant's advisory (if present). Do not rely on the lead summary alone. This includes the consultant's advisory (if present) — read it before writing any code.
 
 ### 2. Register your action
 

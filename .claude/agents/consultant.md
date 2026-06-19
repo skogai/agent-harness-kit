@@ -20,6 +20,7 @@ tools:
   - mcp__agent-harness-kit__deps_snapshot
   - mcp__agent-harness-kit__deps_check
   - mcp__agent-harness-kit__docs_search
+  - mcp__agent-harness-kit__ahk_doctor
 ---
 
 # Consultant Agent — @cardor/agent-harness-kit
